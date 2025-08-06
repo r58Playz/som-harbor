@@ -1,6 +1,8 @@
 import { createEpoxy, init, type EpoxyClient } from "./epoxy";
 import { settings, wispServers } from "./store";
 
+import { parse as csvParse } from "csv-parse/browser/esm/sync";
+
 let currentVisitor: string | null = null;
 let currentVisit: string | null = null;
 
@@ -115,7 +117,8 @@ export async function fetchCookie(path: string, options?: RequestInit): Promise<
 	let raw: Record<string, string | string[]> = (res as any).rawHeaders;
 	console.log(res);
 	let cookieHeader = raw["set-cookie"];
-	let cookies = new Map((cookieHeader instanceof Array ? cookieHeader : [cookieHeader]).map(x => (x || "").split(";")[0].split("=").map(x => decodeURIComponent(x))) as [string, string][]);
+	let cookies = new Map((cookieHeader instanceof Array ? cookieHeader : [cookieHeader])
+		.map(x => (x || "").split(";")[0].split("=").map(x => decodeURIComponent(x))) as [string, string][]);
 
 	if (!cookies.has("_journey_session") && res.status === 500) {
 		banish();
@@ -172,41 +175,6 @@ function getFlashStatus(res: string | Document, required?: boolean): { ok: boole
 	console.log(ret);
 	return ret;
 }
-
-export async function postDevlog(project: number, contents: string, file: { contents: Uint8Array | string, name: string }) {
-	let body = new FormData();
-	body.set("devlog[use_hackatime]", "true");
-	body.set("devlog[text]", contents);
-	body.set("devlog[file]", new File([file.contents], file.name));
-	body.set("commit", "Post Devlog");
-
-	let res = await fetchCookie(`projects/${project}/devlogs`, {
-		method: "POST",
-		headers: { "X-CSRF-Token": await getCsrf() },
-		body,
-	}).then(r => r.text());
-
-	let status = getFlashStatus(res, true);
-	if (!status.ok)
-		throw new Error(status.message);
-}
-(globalThis as any).postDevlog = postDevlog;
-
-export async function deleteDevlog(project: number, devlog: number) {
-	let body = new URLSearchParams();
-	body.set("_method", "delete");
-
-	let res = await fetchCookie(`projects/${project}/devlogs/${devlog}`, {
-		method: "POST",
-		headers: { "X-CSRF-Token": await getCsrf() },
-		body,
-	}).then(r => r.text());
-
-	let status = getFlashStatus(res, true);
-	if (!status.ok)
-		throw new Error(status.message);
-}
-(globalThis as any).deleteDevlog = deleteDevlog;
 
 export interface ApiFollower {
 	id: number,
@@ -314,80 +282,26 @@ export async function getDevlogs(progress: (x: number) => void) {
 }
 (self as any).getDevlogs = getDevlogs;
 
-interface PartialShopItem {
-	id: number,
-	name: string,
-	cost: number,
+async function fetchDb<T>(query: string): Promise<T[]> {
+	let data = new URLSearchParams();
+	data.set("statement", query);
+	data.set("data_source", "main");
+	data.set("run_id", crypto.randomUUID());
+	let text = await fetchCookie("admin/blazer/queries/run", {
+		method: "POST",
+		headers: {
+			"Accept": "text/csv",
+			"Content-Type": "application/x-www-form-urlencoded; charset=UTF-8",
+			"X-CSRF-Token": await getCsrf(),
+		},
+		body: data
+	}).then(r => r.text());
+
+	let csv = csvParse<T>(text, {
+		columns: true,
+		skip_empty_lines: true,
+	});
+
+	return csv;
 }
-interface ShopItem extends PartialShopItem {
-	image: string,
-	description: string,
-}
-
-export async function getShop(id: number): Promise<ShopItem | PartialShopItem> {
-	let res = dom.parseFromString(await fetchCookie(`shop/items/${id}/buy`).then(r => r.text()), "text/html");
-
-	let status = getFlashStatus(res);
-	if (status && !status.ok) {
-		let partial = /to purchase (?<name>.*)\. You need (?<needed>[0-9.]*) more/.exec(status.message);
-		if (partial) {
-			let shells = res.querySelector<HTMLSpanElement>(`div.items-center.justify-center.rounded-full:has(img[src="/shell.png"]) span.ml-1`)?.innerText;
-
-			let cost = 0;
-			if (partial.groups?.needed && shells)
-				cost = +partial.groups.needed + +shells;
-
-			return {
-				id,
-				name: partial.groups?.name || "",
-				cost,
-			} satisfies PartialShopItem;
-		} else {
-			throw new Error(status.message);
-		}
-	}
-
-	let root = res.querySelector<HTMLDivElement>("div.bg-soft-bone.card-pixel");
-	if (!root) throw new Error("shop item not found");
-
-	let script = res.querySelector<HTMLScriptElement>("main > script");
-	let price = /const itemPrice = "(?<price>[0-9.]*)";\n/.exec(script?.innerText || "")?.groups?.price || "0";
-
-	return {
-		id,
-		image: root.querySelector<HTMLImageElement>("div.space-y-6 img.object-contain")?.src || "",
-		name: root.querySelector<HTMLHeadingElement>("div.space-y-6 h1.text-3xl.font-bold.text-darker-taupe")?.innerText || "",
-		description: root.querySelector<HTMLParagraphElement>("div.space-y-6 p.text-lg.text-saddle-taupe")?.innerText || "",
-		cost: +price,
-	} satisfies ShopItem;
-}
-(self as any).getShop = getShop;
-
-export async function probeShop(start: number, end: number) {
-	return await fastPaginate(start, end, async x => {
-		try {
-			let res = await getShop(x);
-			return res;
-		} catch {
-			return null;
-		}
-	}, () => {}).then(x => x.filter(x => x));
-}
-(self as any).probeShop = probeShop;
-
-export async function spamViews(type: string, id: number, count: number) {
-	await fastPaginate(0, count, async _ => {
-		console.log(await fetchCookie('/track_view', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-				'X-CSRF-Token': await getCsrf(),
-			},
-			body: JSON.stringify({
-				viewable_type: type,
-				viewable_id: id
-			})
-		}).then(r=>r.text()))
-	}, () => {});
-}
-(self as any).spamViews = spamViews;
+(self as any).fetchDb = fetchDb;

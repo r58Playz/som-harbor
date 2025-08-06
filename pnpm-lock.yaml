@@ -11,6 +11,9 @@ importers:
       '@mercuryworkshop/epoxy-tls':
         specifier: 2.1.18-1
         version: 2.1.18-1
+      csv-parse:
+        specifier: ^6.1.0
+        version: 6.1.0
       dreamland:
         specifier: link:../dreamland
         version: link:../dreamland
@@ -289,6 +292,9 @@ packages:
   '@types/estree@1.0.8':
     resolution: {integrity: sha512-dWHzHa2WqEXI/O1E9OjrocMTKJl2mSrEolh1Iomrv6U+JuNwaHXsXx9bLu5gG7BUWFIN0skIQJQ/L1rIex4X6w==}
 
+  csv-parse@6.1.0:
+    resolution: {integrity: sha512-CEE+jwpgLn+MmtCpVcPtiCZpVtB6Z2OKPTr34pycYYoL7sxdOkXDdQ4lRiw6ioC0q6BLqhc6cKweCVvral8yhw==}
+
   esbuild@0.25.8:
     resolution: {integrity: sha512-vVC0USHGtMi8+R4Kz8rt6JhEWLxsv9Rnu/lGYbPR8u47B+DCBksq9JarW0zOO7bs37hyOK1l2/oqtbciutL5+Q==}
     engines: {node: '>=18'}
@@ -524,6 +530,8 @@ snapshots:
     optional: true
 
   '@types/estree@1.0.8': {}
+
+  csv-parse@6.1.0: {}
 
   esbuild@0.25.8:
     optionalDependencies:
