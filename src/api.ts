@@ -41,6 +41,7 @@ async function buildClients() {
 	}));
 }
 (self as any).buildClients = buildClients;
+await buildClients();
 
 async function fetch(path: string, options: RequestInit): Promise<FetchRes> {
 	if (!clients) await buildClients();
@@ -176,32 +177,6 @@ function getFlashStatus(res: string | Document, required?: boolean): { ok: boole
 	return ret;
 }
 
-export interface ApiFollower {
-	id: number,
-	name: string
-}
-
-export interface ApiProject {
-	id: number,
-	title: string,
-	description: string,
-	category: string | null,
-	devlogs_count: number,
-	devlogs: number[],
-	total_seconds_coded: number,
-	is_shipped: boolean,
-	readme_link: string,
-	demo_link: string,
-	repo_link: string,
-	slack_id: string,
-	x: number,
-	y: number,
-	created_at: string,
-	updated_at: string,
-	banner: number,
-	followers: ApiFollower[],
-}
-
 interface Pagination {
 	page: number,
 	pages: number,
@@ -230,6 +205,55 @@ async function fastPaginate<T>(start: number, end: number, fetcher: (x: number) 
 	}));
 
 	return ret;
+}
+
+type CacheMap<T> = Map<string, T | Promise<T>>;
+async function cache<T>(
+	map: CacheMap<T>,
+	id: string,
+	inner: () => Promise<T>
+): Promise<T> {
+	const cached = map.get(id);
+	if (cached)
+		return cached;
+
+	const ret = inner();
+	map.set(id, ret);
+
+	try {
+		const res = await ret;
+		map.set(id, res);
+		return res;
+	} catch (error) {
+		map.delete(id);
+		throw error;
+	}
+}
+
+export interface ApiFollower {
+	id: number,
+	name: string
+}
+
+export interface ApiProject {
+	id: number,
+	title: string,
+	description: string,
+	category: string | null,
+	devlogs_count: number,
+	devlogs: number[],
+	total_seconds_coded: number,
+	is_shipped: boolean,
+	readme_link: string,
+	demo_link: string,
+	repo_link: string,
+	slack_id: string,
+	x: number,
+	y: number,
+	created_at: string,
+	updated_at: string,
+	banner: number,
+	followers: ApiFollower[],
 }
 
 export async function getProjects(progress: (x: number) => void) {
@@ -282,7 +306,48 @@ export async function getDevlogs(progress: (x: number) => void) {
 }
 (self as any).getDevlogs = getDevlogs;
 
-async function fetchDb<T>(query: string): Promise<T[]> {
+export interface ApiUserProject {
+	id: number,
+	title: string,
+	devlogs_count: number,
+	created_at: string,
+}
+export interface ApiUserBadge {
+	name: string,
+	text: string,
+	icon: string,
+}
+export interface ApiUser {
+	id: number,
+	slack_id: string,
+	display_name: string,
+	bio: string,
+	projects_count: number,
+	devlogs_count: number,
+	votes_count: number,
+	ships_count: number,
+	projects: ApiUserProject[],
+	coding_time_seconds: number,
+	coding_time_seconds_today: number,
+	balance: string | number,
+	badges: ApiUserBadge[],
+	created_at: string,
+	updated_at: string,
+	avatar: string,
+	custom_css: string,
+}
+
+let userCache = new Map();
+export async function getUser(user: number | "me"): Promise<ApiUser> {
+	return await cache(userCache, "" + user, () => fetchCookie(`api/v1/users/${user}`).then(r => r.json()));
+}
+
+let projectCache = new Map();
+export async function getProject(project: number): Promise<ApiProject> {
+	return await cache(projectCache, "" + project, () => fetchCookie(`api/v1/projects/${project}`).then(r => r.json()));
+}
+
+export async function fetchDb(query: string): Promise<any[]> {
 	let data = new URLSearchParams();
 	data.set("statement", query);
 	data.set("data_source", "main");
@@ -297,7 +362,7 @@ async function fetchDb<T>(query: string): Promise<T[]> {
 		body: data
 	}).then(r => r.text());
 
-	let csv = csvParse<T>(text, {
+	let csv = csvParse<any>(text, {
 		columns: true,
 		skip_empty_lines: true,
 	});
@@ -305,3 +370,7 @@ async function fetchDb<T>(query: string): Promise<T[]> {
 	return csv;
 }
 (self as any).fetchDb = fetchDb;
+
+export function dbBool(val: string): boolean {
+	return val === "true";
+}

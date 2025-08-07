@@ -1,12 +1,13 @@
-import { css, type Component } from "dreamland/core";
+import { createDelegate, css, type Component } from "dreamland/core";
 import "./api";
 
 // @ts-expect-error
 import "m3-dreamland/styles";
-import { argbFromHex, Button, DynamicScheme, Hct, SchemeStyles, TextFieldFilled, Variant } from "m3-dreamland";
+import { argbFromHex, Button, DynamicScheme, Hct, SchemeStyles, TextFieldFilled, ToggleButton, Variant } from "m3-dreamland";
 import "./style.css";
-import { getDevlogs, type ApiDevlog } from "./api";
 import { settings } from "./store";
+import "./ProjectVotes";
+import { ProjectVotes } from "./ProjectVotes";
 
 let scheme = new DynamicScheme({
 	sourceColorHct: Hct.fromInt(argbFromHex("CBA6F7")),
@@ -16,15 +17,21 @@ let scheme = new DynamicScheme({
 	isDark: true,
 });
 
-const App: Component<{}, {}> = function() {
+const App: Component<{}, { fetching: boolean }> = function() {
+	this.fetching = false;
+	let fetch = createDelegate<() => void>();
+
 	return (
 		<div id="app">
 			<SchemeStyles scheme={scheme} motion="expressive">
-				<div class="m3dl-font-display-medium">Harbor Doxxing</div>
+				<div class="m3dl-font-display-medium">Harbor {use(settings.enableDoxxing).andThen("Doxxing", <><strike>Doxxing</strike> Deanonymizing</>)}</div>
 				<div class="controls">
-					<TextFieldFilled placeholder="_journey_session cookie" value={use(settings.token)} />
-					<Button variant="tonal" on:click={() => { }}>Fetch!</Button>
+					<TextFieldFilled placeholder="_journey_session cookie" value={use(settings.token)} type="password" />
+					<Button variant="tonal" on:click={() => (this.fetching = true, fetch(() => this.fetching = false))} disabled={use(this.fetching)}>Fetch!</Button>
+					<ToggleButton variant="outlined" value={use(settings.enableDoxxing)}>Enable Doxxing</ToggleButton>
+					<ToggleButton variant="outlined" value={use(settings.enableResolving)}>Enable Resolving</ToggleButton>
 				</div>
+				<ProjectVotes fetch={fetch} />
 			</SchemeStyles>
 		</div>
 	)
