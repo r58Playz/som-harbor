@@ -1,6 +1,6 @@
 import { css, type Component, type Delegate } from "dreamland/core";
 import { dbBool, fetchDb, getProject, getUser, type ApiProject, type ApiUser } from "./api";
-import { Card, Chip, TextFieldFilled } from "m3-dreamland";
+import { Button, Card, Chip, TextFieldFilled } from "m3-dreamland";
 import { Doxx } from "./utils";
 import { settings } from "./store";
 
@@ -138,7 +138,6 @@ let VoteView: Component<{ vote: Vote }, {
 	user: ApiUser | undefined;
 }> = function(cx) {
 	cx.mount = async () => {
-		console.log(this.vote);
 		if (settings.enableResolving) {
 			this.project1 = await getProject(this.vote.project_1_id);
 			this.project2 = await getProject(this.vote.project_2_id);
@@ -155,9 +154,12 @@ let VoteView: Component<{ vote: Vote }, {
 		<div>
 			<Card variant="filled">
 				<div class="m3dl-font-headline-small">
-					{project1Name}
+					<a href={`https://summer.hackclub.com/projects/${this.vote.project_1_id}`} target="_blank">{project1Name}</a>
 					{' vs '}
-					{project2Name} ({this.vote.result})</div>
+					<a href={`https://summer.hackclub.com/projects/${this.vote.project_2_id}`} target="_blank">{project2Name}</a>
+					{' '}
+					({this.vote.result})
+				</div>
 				<div class="chips">
 					<Chip variant="assist" on:click={() => { }}>{new Date(this.vote.created_at).toLocaleString()}</Chip>
 					<Chip variant="assist" on:click={() => { }}>State: {this.vote.status}</Chip>
@@ -189,6 +191,13 @@ let VoteView: Component<{ vote: Vote }, {
 	)
 }
 VoteView.style = css`
+	a {
+		color: rgb(var(--m3dl-color-primary));
+	}
+	a:visited {
+		color: rgb(var(--m3dl-color-secondary));
+	}
+
 	:scope > :global(.m3dl-card) {
 		display: flex;
 		flex-direction: column;
@@ -209,7 +218,7 @@ VoteView.style = css`
 	}
 `;
 
-export let ProjectVotes: Component<{ fetch: Delegate<() =>void> }, {
+export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 	project: string,
 	user: ApiUser | undefined,
 	votes: Vote[],
@@ -221,7 +230,6 @@ export let ProjectVotes: Component<{ fetch: Delegate<() =>void> }, {
 
 	cx.mount = async () => {
 		this.user = await getUser("me");
-		console.log(this.user);
 	}
 
 	this.fetch.listen(async x => {
