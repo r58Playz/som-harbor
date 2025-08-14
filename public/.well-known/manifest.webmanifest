@@ -1,0 +1,25 @@
+{
+	"id": "/",
+	"name": "SoM Harbor",
+	"version": "0.0.0",
+	"icons": [
+		{
+			"src": "/vite.svg",
+			"type": "image/svg+xml",
+			"sizes": "512x512",
+			"purpose": "any maskable"
+		}
+	],
+	"start_url": "/",
+	"display": "standalone",
+	"scope": "/",
+	"isolated_storage": true,
+	"permissions_policy": {
+		"cross-origin-isolated": [
+			"self"
+		],
+		"controlled-frame": [
+			"self"
+		]
+	}
+}

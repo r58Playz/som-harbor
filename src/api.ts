@@ -160,9 +160,9 @@ export async function getCsrf(): Promise<string> {
 	return csrf.content;
 }
 
-function getFlashStatus(res: string | Document, required: true): { ok: boolean, message: string };
-function getFlashStatus(res: string | Document, required?: false): { ok: boolean, message: string } | null;
-function getFlashStatus(res: string | Document, required?: boolean): { ok: boolean, message: string } | null {
+export function getFlashStatus(res: string | Document, required: true): { ok: boolean, message: string };
+export function getFlashStatus(res: string | Document, required?: false): { ok: boolean, message: string } | null;
+export function getFlashStatus(res: string | Document, required?: boolean): { ok: boolean, message: string } | null {
 	let page = res instanceof Document ? res : dom.parseFromString(res, "text/html");
 
 	let flash = page.querySelector<HTMLDivElement>(`[data-controller="flash"] > div`);

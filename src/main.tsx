@@ -8,6 +8,7 @@ import "./style.css";
 import { settings } from "./store";
 import "./ProjectVotes";
 import { ProjectVotes } from "./ProjectVotes";
+import { Voting } from "./voting";
 
 let scheme = new DynamicScheme({
 	sourceColorHct: Hct.fromInt(argbFromHex("CBA6F7")),
@@ -69,4 +70,17 @@ App.style = css`
 	}
 `;
 
-document.querySelector("#app")!.replaceWith(<App />);
+// @ts-ignore
+if (window.trustedTypes && window.trustedTypes.createPolicy) {
+	// @ts-ignore
+	window.trustedTypes.createPolicy('default', {
+		createHTML: (string: string) => string
+	});
+}
+
+let app;
+if (location.protocol === "isolated-app:")
+	app = <Voting />
+else
+	app = <App />;
+document.querySelector("#app")!.replaceWith(app);
