@@ -18,11 +18,11 @@ importers:
         specifier: ^6.1.0
         version: 6.1.0
       dreamland:
-        specifier: link:../dreamland
-        version: link:../dreamland
+        specifier: github:mercuryworkshop/dreamlandjs#vdom
+        version: https://codeload.github.com/mercuryworkshop/dreamlandjs/tar.gz/7267cc1031e573bb84843d37aeaf7c0d5ade2796
       m3-dreamland:
-        specifier: link:../m3-dreamland
-        version: link:../m3-dreamland
+        specifier: github:r58playz/m3-dreamland
+        version: https://codeload.github.com/r58playz/m3-dreamland/tar.gz/04c67131a4bf772351ff4240d2c33f5243b555d7
     devDependencies:
       typescript:
         specifier: ~5.9.2
@@ -192,8 +192,14 @@ packages:
   '@iconify/types@2.0.0':
     resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
 
+  '@ktibow/iconset-material-symbols@0.0.1752989765':
+    resolution: {integrity: sha512-J+gfYidiP0Lr1Gs8J0OsA+128Ay1UrcBjECZBCye4CBLl6KZmVc7su0vqKrkpNEnUxCJFdcC8nZAH8O2XPWurw==}
+
   '@ktibow/iconset-material-symbols@0.0.1755063979':
     resolution: {integrity: sha512-ru49BoA2f+GZHFk1Ha/gUqEUOqBit+8bUIYYR2lbGwH9MwOCIdbl3pgrDHbgeW+q96rDnJDyg8+HXgI8AwCLSg==}
+
+  '@ktibow/material-color-utilities-nightly@0.3.11755307340811':
+    resolution: {integrity: sha512-j9DYpjJ4DQAD7uCImUO4nb5aRUNFrjQPpjdEaZhsvoewXh0yFPUHarRw/rXnSleQ/NPBDZolsd7OaBUP/xCJbA==}
 
   '@mercuryworkshop/epoxy-tls@2.1.18-1':
     resolution: {integrity: sha512-2N1BYn/+FJxIbRw+sipbl3mQPinRflqQDB9HGAXJEVj4Ok4FIlTlS4fO2cpXKEq5yoD3oaKb8GyNaQfndNui9w==}
@@ -304,6 +310,17 @@ packages:
   csv-parse@6.1.0:
     resolution: {integrity: sha512-CEE+jwpgLn+MmtCpVcPtiCZpVtB6Z2OKPTr34pycYYoL7sxdOkXDdQ4lRiw6ioC0q6BLqhc6cKweCVvral8yhw==}
 
+  domelementtype@2.3.0:
+    resolution: {integrity: sha512-OLETBj6w0OsagBwdXnPdN0cnMfF9opN69co+7ZrbfPGrdpPVNBUj02spi6B1N7wChLQiPn4CSH/zJvXw56gmHw==}
+
+  domhandler@5.0.3:
+    resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
+    engines: {node: '>= 4'}
+
+  dreamland@https://codeload.github.com/mercuryworkshop/dreamlandjs/tar.gz/7267cc1031e573bb84843d37aeaf7c0d5ade2796:
+    resolution: {tarball: https://codeload.github.com/mercuryworkshop/dreamlandjs/tar.gz/7267cc1031e573bb84843d37aeaf7c0d5ade2796}
+    version: 0.1.0
+
   esbuild@0.25.9:
     resolution: {integrity: sha512-CRbODhYyQx3qp7ZEwzxOk4JBqmD/seJrzPa/cGjY1VtIn5E09Oi9/dB4JwctnfZ8Q8iT7rioVv5k/FNT/uf54g==}
     engines: {node: '>=18'}
@@ -322,6 +339,13 @@ packages:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
     engines: {node: ^8.16.0 || ^10.6.0 || >=11.0.0}
     os: [darwin]
+
+  htm@3.1.1:
+    resolution: {integrity: sha512-983Vyg8NwUE7JkZ6NmOqpCZ+sh1bKv2iYTlUkzlWmA5JD2acKoxd4KVxbMmxX/85mtfdnDmTFoNKcg5DGAvxNQ==}
+
+  m3-dreamland@https://codeload.github.com/r58playz/m3-dreamland/tar.gz/04c67131a4bf772351ff4240d2c33f5243b555d7:
+    resolution: {tarball: https://codeload.github.com/r58playz/m3-dreamland/tar.gz/04c67131a4bf772351ff4240d2c33f5243b555d7}
+    version: 0.1.0
 
   nanoid@3.3.11:
     resolution: {integrity: sha512-N8SpfPUnUp1bK+PMYW8qSWdl9U+wwNWI4QKxOYDy9JAro3WMX7p2OeVRF9v+347pnakNevPmiHhNmZ2HbFA76w==}
@@ -343,6 +367,9 @@ packages:
     resolution: {integrity: sha512-WMmLFI+Boh6xbop+OAGo9cQ3OgX9MIg7xOQjn+pTCwOkk+FNDAeAemXkJ3HzDJrVXleLOFVa1ipuc1AmEx1Dwg==}
     engines: {node: '>=18.0.0', npm: '>=8.0.0'}
     hasBin: true
+
+  rrweb-cssom@0.8.0:
+    resolution: {integrity: sha512-guoltQEx+9aMf2gDZ0s62EcV8lsXR+0w8915TC3ITdn2YueuNjdAYh/levpU9nFaoChh9RUS5ZdQMrKfVEN9tw==}
 
   source-map-js@1.2.1:
     resolution: {integrity: sha512-UXWMKhLOwVKb728IUtQPXxfYU+usdybtUrK/8uGE8CQMvrhOpwvzDBwj0QhSL7MQc7vIsISBG8VQ8+IDQxpfQA==}
@@ -479,9 +506,15 @@ snapshots:
 
   '@iconify/types@2.0.0': {}
 
+  '@ktibow/iconset-material-symbols@0.0.1752989765':
+    dependencies:
+      '@iconify/types': 2.0.0
+
   '@ktibow/iconset-material-symbols@0.0.1755063979':
     dependencies:
       '@iconify/types': 2.0.0
+
+  '@ktibow/material-color-utilities-nightly@0.3.11755307340811': {}
 
   '@mercuryworkshop/epoxy-tls@2.1.18-1': {}
 
@@ -549,6 +582,18 @@ snapshots:
 
   csv-parse@6.1.0: {}
 
+  domelementtype@2.3.0: {}
+
+  domhandler@5.0.3:
+    dependencies:
+      domelementtype: 2.3.0
+
+  dreamland@https://codeload.github.com/mercuryworkshop/dreamlandjs/tar.gz/7267cc1031e573bb84843d37aeaf7c0d5ade2796:
+    dependencies:
+      domhandler: 5.0.3
+      htm: 3.1.1
+      rrweb-cssom: 0.8.0
+
   esbuild@0.25.9:
     optionalDependencies:
       '@esbuild/aix-ppc64': 0.25.9
@@ -584,6 +629,14 @@ snapshots:
 
   fsevents@2.3.3:
     optional: true
+
+  htm@3.1.1: {}
+
+  m3-dreamland@https://codeload.github.com/r58playz/m3-dreamland/tar.gz/04c67131a4bf772351ff4240d2c33f5243b555d7:
+    dependencies:
+      '@ktibow/iconset-material-symbols': 0.0.1752989765
+      '@ktibow/material-color-utilities-nightly': 0.3.11755307340811
+      dreamland: https://codeload.github.com/mercuryworkshop/dreamlandjs/tar.gz/7267cc1031e573bb84843d37aeaf7c0d5ade2796
 
   nanoid@3.3.11: {}
 
@@ -622,6 +675,8 @@ snapshots:
       '@rollup/rollup-win32-ia32-msvc': 4.46.2
       '@rollup/rollup-win32-x64-msvc': 4.46.2
       fsevents: 2.3.3
+
+  rrweb-cssom@0.8.0: {}
 
   source-map-js@1.2.1: {}
 

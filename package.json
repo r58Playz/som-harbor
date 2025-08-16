@@ -16,7 +16,7 @@
 		"@ktibow/iconset-material-symbols": "^0.0.1755063979",
 		"@mercuryworkshop/epoxy-tls": "2.1.18-1",
 		"csv-parse": "^6.1.0",
-		"dreamland": "link:../dreamland",
-		"m3-dreamland": "link:../m3-dreamland"
+		"dreamland": "github:mercuryworkshop/dreamlandjs#vdom",
+		"m3-dreamland": "github:r58playz/m3-dreamland"
 	}
 }
