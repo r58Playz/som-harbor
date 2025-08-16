@@ -4,12 +4,16 @@ export const wispServers = ["wss://anura.pro/"]; //, "wss://wisp.mercurywork.sho
 
 export const settings: Stateful<{
 	token: string,
+	shareToken: string,
+	shareAnon: boolean,
 	epoxyVersion: string,
 	enableDoxxing: boolean,
 	enableResolving: boolean,
 	ai: boolean,
 }> = createStore({
 	token: "",
+	shareToken: "",
+	shareAnon: true,
 	epoxyVersion: "",
 	enableDoxxing: false,
 	enableResolving: true,

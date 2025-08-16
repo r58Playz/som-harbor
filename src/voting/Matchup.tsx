@@ -143,6 +143,9 @@ export const Matchup: Component<{ vote: VoteData }, {
 	id: number | "tie",
 	reason: string,
 
+	anon: boolean,
+	sendToUser: boolean,
+
 	submitting: boolean,
 	ai: "used" | "error" | "loading" | undefined,
 }> = function(cx) {
@@ -152,7 +155,24 @@ export const Matchup: Component<{ vote: VoteData }, {
 	this.p1repo = false;
 	this.p2demo = false;
 	this.p2repo = false;
+
+	this.anon = settings.shareAnon;
+	this.sendToUser = false;
+
 	this.submitting = false;
+
+	let setting = true;
+	use(this.sendToUser, this.anon).listen(([sendToUser, anon]) => {
+		if (setting) {
+			setting = false;
+			return;
+		}
+		console.log("share status", sendToUser, anon);
+		if (sendToUser) {
+			setting = true;
+			this.anon = false;
+		}
+	});
 
 	cx.mount = async () => {
 		this.user = await getUser("me");
@@ -163,12 +183,33 @@ export const Matchup: Component<{ vote: VoteData }, {
 
 	const submit = () => {
 		this.submitting = true;
+		let reason = (this.ai === "used" ? "[SoM Harbor: THIS VOTE USED AI. PLEASE INVALIDATE IT.] " : "") + this.reason;
 		vote({
 			id: this.id,
-			reason: (this.ai === "used" ? "[SoM Harbor: THIS VOTE USED AI. PLEASE INVALIDATE IT.] " : "") + this.reason,
+			reason,
 			project: [{ repo: this.p1repo, demo: this.p1demo }, { repo: this.p2repo, demo: this.p2demo }],
 			musicPlayed: true,
 		});
+		if (settings.shareToken) {
+			let winner = this.id === this.vote.vote[0] ? this.p1 : this.p2;
+			let loser = this.id === this.vote.vote[0] ? this.p2 : this.p1;
+
+			fetch("https://api.saahild.com/api/som/vote", {
+				method: "POST",
+				headers: {
+					Authorization: settings.shareToken,
+					"Content-Type": "application/json",
+				},
+				body: JSON.stringify({
+					message: reason,
+					title: winner!.title,
+					a_title: loser!.title,
+					is_tie: this.id === "tie",
+					anon: this.anon,
+					send_it_to_user: this.sendToUser,
+				}),
+			});
+		}
 	};
 
 	const ai = async () => {
@@ -250,6 +291,8 @@ export const Matchup: Component<{ vote: VoteData }, {
 					{this.vote.remaining ? <span class="m3dl-font-headline-large">{this.vote.remaining} remaining</span> : null}
 				</div>
 				<div class="expand" />
+				<ToggleButton variant="outlined" value={use(this.anon)}>Send anonymously</ToggleButton>
+				<ToggleButton variant="outlined" value={use(this.sendToUser)}>Send to user</ToggleButton>
 				<Button variant="outlined" icon="full" on:click={ai} disabled={use(this.p1, this.p2, settings.ai).map(([a, b, c]) => !(a && b) || !c)}>
 					{use(this.ai).map(x => {
 						if (x === "used") return <Icon icon={iconMarkChatRead} />;

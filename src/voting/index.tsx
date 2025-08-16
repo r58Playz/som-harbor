@@ -1,7 +1,8 @@
 import { css, type Component } from "dreamland/core";
 import { ApiFrame, state, type VoteData, setApiFrameUrl } from "./api";
-import { argbFromHex, Card, DynamicScheme, Hct, SchemeStyles, Switch, Variant, Button } from "m3-dreamland";
+import { argbFromHex, Card, DynamicScheme, Hct, SchemeStyles, Switch, Variant, Button, TextFieldFilled } from "m3-dreamland";
 import { Matchup } from "./Matchup";
+import { settings } from "../store";
 
 export let scheme = new DynamicScheme({
 	sourceColorHct: Hct.fromInt(argbFromHex("CBA6F7")),
@@ -25,6 +26,13 @@ export let Voting: Component<{}, { unhide: boolean }> = function() {
 						</div>
 					</div>
 				))}
+				<Card variant="outlined">
+					<div class="settings">
+						<div class="m3dl-font-headline-medium">SoM Share Votes Status</div>
+						<TextFieldFilled value={use(settings.shareToken)} placeholder="SoM Share Votes token" supporting="https://api.saahild.com/api/som/slack/oauth" type="password" />
+						<div class="switch"><Switch value={use(settings.shareAnon)} /> Share anonymously</div>
+					</div>
+				</Card>
 				<Card variant="outlined">
 					<div class="settings">
 						<div class="m3dl-font-headline-medium">Controlled Frame Status</div>
