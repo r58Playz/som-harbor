@@ -1,6 +1,6 @@
 import { css, type Component, type Delegate } from "dreamland/core";
 import { dbBool, fetchDb, getProject, getUser, type ApiProject, type ApiUser } from "./api";
-import { Button, Card, Chip, TextFieldFilled } from "m3-dreamland";
+import { Card, Chip, TextFieldFilled } from "m3-dreamland";
 import { Doxx } from "./utils";
 import { settings } from "./store";
 

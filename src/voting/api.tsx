@@ -287,8 +287,8 @@ export async function controlledFetch(
 							bodyUsed = true;
 							return Promise.resolve(body);
 						},
-						blob: () => customResponse.arrayBuffer().then(b => new Blob([b], { type: meta.contentType })),
-						text: () => customResponse.arrayBuffer().then(b => new TextDecoder().decode(b)),
+						blob: () => customResponse.arrayBuffer().then((b: any) => new Blob([b], { type: meta.contentType })),
+						text: () => customResponse.arrayBuffer().then((b: any) => new TextDecoder().decode(b)),
 						json: () => customResponse.text().then(JSON.parse),
 					};
 					resolve(customResponse);

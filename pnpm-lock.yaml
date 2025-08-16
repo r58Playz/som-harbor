@@ -22,13 +22,13 @@ importers:
         version: https://codeload.github.com/mercuryworkshop/dreamlandjs/tar.gz/7267cc1031e573bb84843d37aeaf7c0d5ade2796
       m3-dreamland:
         specifier: github:r58playz/m3-dreamland
-        version: https://codeload.github.com/r58playz/m3-dreamland/tar.gz/04c67131a4bf772351ff4240d2c33f5243b555d7
+        version: https://codeload.github.com/r58playz/m3-dreamland/tar.gz/68603750d521f753ff16d659ebb545850d96c4fa
     devDependencies:
       typescript:
         specifier: ~5.9.2
         version: 5.9.2
       vite:
-        specifier: ^7.0.6
+        specifier: ^7.1.2
         version: 7.1.2
 
 packages:
@@ -343,8 +343,8 @@ packages:
   htm@3.1.1:
     resolution: {integrity: sha512-983Vyg8NwUE7JkZ6NmOqpCZ+sh1bKv2iYTlUkzlWmA5JD2acKoxd4KVxbMmxX/85mtfdnDmTFoNKcg5DGAvxNQ==}
 
-  m3-dreamland@https://codeload.github.com/r58playz/m3-dreamland/tar.gz/04c67131a4bf772351ff4240d2c33f5243b555d7:
-    resolution: {tarball: https://codeload.github.com/r58playz/m3-dreamland/tar.gz/04c67131a4bf772351ff4240d2c33f5243b555d7}
+  m3-dreamland@https://codeload.github.com/r58playz/m3-dreamland/tar.gz/68603750d521f753ff16d659ebb545850d96c4fa:
+    resolution: {tarball: https://codeload.github.com/r58playz/m3-dreamland/tar.gz/68603750d521f753ff16d659ebb545850d96c4fa}
     version: 0.1.0
 
   nanoid@3.3.11:
@@ -632,7 +632,7 @@ snapshots:
 
   htm@3.1.1: {}
 
-  m3-dreamland@https://codeload.github.com/r58playz/m3-dreamland/tar.gz/04c67131a4bf772351ff4240d2c33f5243b555d7:
+  m3-dreamland@https://codeload.github.com/r58playz/m3-dreamland/tar.gz/68603750d521f753ff16d659ebb545850d96c4fa:
     dependencies:
       '@ktibow/iconset-material-symbols': 0.0.1752989765
       '@ktibow/material-color-utilities-nightly': 0.3.11755307340811
