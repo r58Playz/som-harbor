@@ -96,7 +96,7 @@ async function fetch(path: string, options: RequestInit): Promise<FetchRes> {
 
 	return await promise as FetchRes;
 }
-(self as any).fetch = fetch;
+(self as any).epoxyFetch = fetch;
 
 function buildCookie() {
 	if (!settings.token) throw "no token";
@@ -108,13 +108,13 @@ function buildCookie() {
 	return cookie + "ahoy_client=toshit-som";
 }
 
-export async function fetchCookie(path: string, options?: RequestInit): Promise<Response> {
+async function fetchCookieBackend(path: string, options?: RequestInit): Promise<Response> {
 	options ??= {};
 	options.headers ??= {};
 	(options.headers as any)["Cookie"] = buildCookie();
 	options.redirect = "manual";
 
-	let { res, banish } = await fetch(new URL(path, "https://summer.hackclub.com").toString(), options);
+	let { res, banish } = await fetch(path, options);
 	let raw: Record<string, string | string[]> = (res as any).rawHeaders;
 	console.log(res);
 	let cookieHeader = raw["set-cookie"];
@@ -148,6 +148,13 @@ export async function fetchCookie(path: string, options?: RequestInit): Promise<
 	}
 
 	return res;
+}
+
+let backend = fetchCookieBackend;
+export function setFetchCookieBackend(fn: any) { backend = fn };
+
+export async function fetchCookie(path: string, options?: RequestInit): Promise<Response> {
+	return backend(new URL(path, "https://summer.hackclub.com").toString(), options);
 }
 
 let dom = new DOMParser();
@@ -235,24 +242,36 @@ export interface ApiFollower {
 	name: string
 }
 
+export interface ApiProjectDevlog {
+	id: number,
+	text: string,
+	attachment: string,
+	time_seconds: number,
+	likes_count: number,
+	comments_count: number,
+	comments: never[],
+	created_at: string,
+	updated_at: string,
+}
 export interface ApiProject {
 	id: number,
 	title: string,
 	description: string,
 	category: string | null,
 	devlogs_count: number,
-	devlogs: number[],
+	devlogs: ApiProjectDevlog[],
 	total_seconds_coded: number,
 	is_shipped: boolean,
 	readme_link: string,
 	demo_link: string,
 	repo_link: string,
+	user_id: number,
 	slack_id: string,
-	x: number,
-	y: number,
+	x: number | null,
+	y: number | null,
 	created_at: string,
 	updated_at: string,
-	banner: number,
+	banner: string,
 	followers: ApiFollower[],
 }
 

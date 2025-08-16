@@ -1,6 +1,7 @@
 import { css, type Component } from "dreamland/core";
-import { ApiFrame, state } from "./api";
-import { argbFromHex, Card, DynamicScheme, Hct, SchemeStyles, Switch, Variant } from "m3-dreamland";
+import { ApiFrame, state, type VoteData, setApiFrameUrl } from "./api";
+import { argbFromHex, Card, DynamicScheme, Hct, SchemeStyles, Switch, Variant, Button } from "m3-dreamland";
+import { Matchup } from "./Matchup";
 
 export let scheme = new DynamicScheme({
 	sourceColorHct: Hct.fromInt(argbFromHex("CBA6F7")),
@@ -16,9 +17,14 @@ export let Voting: Component<{}, { unhide: boolean }> = function() {
 	return (
 		<div id="app">
 			<SchemeStyles scheme={scheme} motion="expressive">
-				<div class="frame" class:hidden={use(state.loggedIn, this.unhide).map(([a, b]) => a && !b)}>
-					<ApiFrame />
-				</div>
+				{use(state.voteData).andThen(((x: VoteData) => <Matchup vote={x} />) as any, (
+					<div class="loading">
+						<div>Loading matchup...</div>
+						<div>
+							<Button variant="tonal" on:click={() => setApiFrameUrl("https://summer.hackclub.com/votes/new")}>Attempt to force-reload controlled frame</Button>
+						</div>
+					</div>
+				))}
 				<Card variant="outlined">
 					<div class="settings">
 						<div class="m3dl-font-headline-medium">Controlled Frame Status</div>
@@ -26,6 +32,12 @@ export let Voting: Component<{}, { unhide: boolean }> = function() {
 						<div class="switch"><Switch value={use(this.unhide)} /> Unhide</div>
 					</div>
 				</Card>
+				<div class="frame" class:hidden={use(state.loggedIn, this.unhide).map(([a, b]) => a && !b)}>
+					<div class="placeholder">
+						Controlled Frame loading...
+					</div>
+					<ApiFrame />
+				</div>
 			</SchemeStyles>
 		</div>
 	)
@@ -48,13 +60,25 @@ Voting.style = css`
 	}
 
 	.frame {
-		height: 32rem;
+		flex: 0 0 75%;
+		overflow: hidden;
+		position: relative;
+
+		border: 1px solid rgb(var(--m3dl-color-outline-variant));
+		border-radius: var(--m3dl-shape-medium);
 	}
 	.frame.hidden {
-		height: 0;
+		display: none;
+	}
+	.frame > :global(*) {
+		position: absolute;
+		inset: 0;
+	}
+	.placeholder {
+		padding: 0.5rem;
 	}
 
-	.settings {
+	.settings, .loading {
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;

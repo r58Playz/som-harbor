@@ -74,7 +74,8 @@ App.style = css`
 if (window.trustedTypes && window.trustedTypes.createPolicy) {
 	// @ts-ignore
 	window.trustedTypes.createPolicy('default', {
-		createHTML: (string: string) => string
+		createHTML: (string: string) => string,
+		createScriptURL: (string: string) => string
 	});
 }
 

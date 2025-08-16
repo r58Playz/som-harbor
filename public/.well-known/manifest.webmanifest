@@ -1,7 +1,7 @@
 {
 	"id": "/",
 	"name": "SoM Harbor",
-	"version": "0.0.0",
+	"version": "0.0.1",
 	"icons": [
 		{
 			"src": "/vite.svg",
