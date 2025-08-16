@@ -30,7 +30,6 @@ export let state: Stateful<{
 	voteData: null,
 });
 
-// @ts-expect-error
 function voteContentScript(inject: boolean) {
 	if (inject)
 		return () =>

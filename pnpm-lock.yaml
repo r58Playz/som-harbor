@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@ktibow/iconset-material-symbols':
+        specifier: ^0.0.1755063979
+        version: 0.0.1755063979
       '@mercuryworkshop/epoxy-tls':
         specifier: 2.1.18-1
         version: 2.1.18-1
@@ -185,6 +188,12 @@ packages:
     engines: {node: '>=18'}
     cpu: [x64]
     os: [win32]
+
+  '@iconify/types@2.0.0':
+    resolution: {integrity: sha512-+wluvCrRhXrhyOmRDJ3q8mux9JkKy5SJ/v8ol2tu4FVjyYvtEzkc/3pK15ET6RKg4b4w4BmTk1+gsCUhf21Ykg==}
+
+  '@ktibow/iconset-material-symbols@0.0.1755063979':
+    resolution: {integrity: sha512-ru49BoA2f+GZHFk1Ha/gUqEUOqBit+8bUIYYR2lbGwH9MwOCIdbl3pgrDHbgeW+q96rDnJDyg8+HXgI8AwCLSg==}
 
   '@mercuryworkshop/epoxy-tls@2.1.18-1':
     resolution: {integrity: sha512-2N1BYn/+FJxIbRw+sipbl3mQPinRflqQDB9HGAXJEVj4Ok4FIlTlS4fO2cpXKEq5yoD3oaKb8GyNaQfndNui9w==}
@@ -467,6 +476,12 @@ snapshots:
 
   '@esbuild/win32-x64@0.25.9':
     optional: true
+
+  '@iconify/types@2.0.0': {}
+
+  '@ktibow/iconset-material-symbols@0.0.1755063979':
+    dependencies:
+      '@iconify/types': 2.0.0
 
   '@mercuryworkshop/epoxy-tls@2.1.18-1': {}
 
