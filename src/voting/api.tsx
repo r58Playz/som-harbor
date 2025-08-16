@@ -41,18 +41,20 @@ function voteContentScript(inject: boolean) {
 			});
 
 	if (location.pathname === "/votes/new") {
-		let ids = [...document.querySelectorAll<HTMLInputElement>(`[name='fraud_report[suspect_id]']`)].map(x => +x.value);
-		let remainingText = document.querySelector<HTMLParagraphElement>(`[data-sidebar-target="mainContent"] p.text-nice-blue`)?.innerText || "";
-		let remaining = +(/vote ([0-9]*) more times/.exec(remainingText)?.[1] || '0');
+		function getVoteData() {
+			let ids = [...document.querySelectorAll<HTMLInputElement>(`[name='fraud_report[suspect_id]']`)].map(x => +x.value);
+			let remainingText = document.querySelector<HTMLParagraphElement>(`[data-sidebar-target="mainContent"] p.text-nice-blue`)?.innerText || "";
+			let remaining = +(/vote ([0-9]*) more times/.exec(remainingText)?.[1] || '0');
+			return { remaining, vote: ids };
+		}
 
-		console.log("vote data", ids);
+		let data = getVoteData();
+
+		console.log("vote data", data);
 		try {
 			fetch("https://som-voting/vote", {
 				method: "POST",
-				body: JSON.stringify({
-					remaining,
-					vote: ids,
-				}),
+				body: JSON.stringify(data),
 			});
 		} catch { }
 
@@ -80,6 +82,14 @@ function voteContentScript(inject: boolean) {
 
 			let submit = form.querySelector<HTMLButtonElement>(`button[data-form-target="submitButton"]`)!;
 			submit.click();
+
+			let interval = setInterval(() => {
+				let newData = getVoteData();
+				if (JSON.stringify(data) !== JSON.stringify(newData)) {
+					location.reload();
+					clearInterval(interval);
+				}
+			}, 100);
 		}
 	}
 }
