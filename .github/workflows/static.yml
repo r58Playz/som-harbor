@@ -40,6 +40,10 @@ jobs:
         uses: pnpm/action-setup@v4
         with:
           version: latest
+      - name: Build dl
+        run: "cd .. && git clone https://github.com/MercuryWorkshop/dreamlandjs dreamland -b vdom && cd dreamland && pnpm i && pnpm build"
+      - name: Build m3dl
+        run: "cd .. && git clone https://github.com/r58playz/m3-dreamland m3-dreamland && cd m3-dreamland && pnpm i && pnpm build"
       - name: Install
         run: "pnpm i"
       - name: Build
