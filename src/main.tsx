@@ -3,7 +3,7 @@ import "./api";
 
 // @ts-expect-error
 import "m3-dreamland/styles";
-import { argbFromHex, Button, DynamicScheme, Hct, SchemeStyles, TextFieldFilled, ToggleButton, Variant } from "m3-dreamland";
+import { argbFromHex, Button, Card, DynamicScheme, Hct, SchemeStyles, TextFieldFilled, ToggleButton, Variant } from "m3-dreamland";
 import "./style.css";
 import { settings } from "./store";
 import "./ProjectVotes";
@@ -25,7 +25,19 @@ const App: Component<{}, { fetching: boolean }> = function() {
 	return (
 		<div id="app">
 			<SchemeStyles scheme={scheme} motion="expressive">
-				<div class="m3dl-font-display-medium">Harbor {use(settings.enableDoxxing).andThen("Doxxing", <><strike>Doxxing</strike> Deanonymizing</>)}</div>
+				<div class="m3dl-font-display-medium">SoM Harbor</div>
+				<Card variant="filled">
+					<div class="m3dl-font-title-large"><b>Looking for the voting client?</b></div>
+					<p>
+						The voting client is an Isolated Web App so that it can take advantage of the Controlled Frame API to act exactly like a regular browser.{' '}
+						You must use Chrome to install and use it.
+					</p>
+					<ol>
+						<li>Enable the flags "Enable Isolated Web Apps", "Enable Isolated Web App Developer Mode", and potentially "Enable Controlled Frame".</li>
+						<li>Go to "chrome://web-app-internals".</li>
+						<li>Install this webpage as an Isolated Web App by typing in this page's URL as the "Dev Mode Proxy URL".</li>
+					</ol>
+				</Card>
 				<div class="controls">
 					<TextFieldFilled placeholder="_journey_session cookie" value={use(settings.token)} type="password" />
 					<Button variant="tonal" on:click={() => (this.fetching = true, fetch(() => this.fetching = false))} disabled={use(this.fetching)}>Fetch!</Button>
@@ -68,6 +80,8 @@ App.style = css`
 	.controls > :global(.m3dl-textfield) {
 		flex: 1;
 	}
+
+	ol { margin: 0; }
 `;
 
 // @ts-ignore

@@ -1,5 +1,5 @@
 import { css, jsx, type Component } from "dreamland/core";
-import { controlledFetch, controlledFetchRedirecting, vote, type VoteData } from "./api";
+import { controlledFetchRedirecting, vote, type VoteData } from "./api";
 import { getProject, getUser, type ApiProject, type ApiUser } from "../api";
 import { Button, Card, Chip, Icon, LoadingIndicator, TextFieldFilled, ToggleButton } from "m3-dreamland";
 import iconQuickReply from "@ktibow/iconset-material-symbols/quickreply-outline";
