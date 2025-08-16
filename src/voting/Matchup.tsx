@@ -250,7 +250,7 @@ export const Matchup: Component<{ vote: VoteData }, {
 					{this.vote.remaining ? <span class="m3dl-font-headline-large">{this.vote.remaining} remaining</span> : null}
 				</div>
 				<div class="expand" />
-				<Button variant="outlined" icon="full" on:click={ai} disabled={use(this.p1, this.p2, settings.ai).map(([a, b, c]) => (!a || !b) && c)}>
+				<Button variant="outlined" icon="full" on:click={ai} disabled={use(this.p1, this.p2, settings.ai).map(([a, b, c]) => !(a && b) || !c)}>
 					{use(this.ai).map(x => {
 						if (x === "used") return <Icon icon={iconMarkChatRead} />;
 						if (x === "error") return <Icon icon={iconChatError} />;
