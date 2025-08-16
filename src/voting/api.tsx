@@ -268,9 +268,9 @@ export async function controlledFetch(
 				} else {
 					// Otherwise, reconstruct the Response object from the byte stream.
 					const view = new DataView(buffer);
-					const metaLen = view.getUint32(0, true);
-					const meta = JSON.parse(new TextDecoder().decode(buffer.slice(4, 4 + metaLen)));
-					const body = buffer.slice(4 + metaLen);
+					const metaLen = view.getUint32(1, true);
+					const meta = JSON.parse(new TextDecoder().decode(buffer.slice(5, 5 + metaLen)));
+					const body = buffer.slice(5 + metaLen);
 
 					let bodyUsed = false;
 					const customResponse: any = {
@@ -321,8 +321,8 @@ export async function controlledFetch(
 						};
 						const metadataBytes = new TextEncoder().encode(JSON.stringify(metadata));
 						const resBytes = new Uint8Array(await response.arrayBuffer());
-						const lengthBuffer = new Uint8Array(4);
-						new DataView(lengthBuffer.buffer).setUint32(0, metadataBytes.byteLength, true);
+						const lengthBuffer = new Uint8Array(5);
+						new DataView(lengthBuffer.buffer).setUint32(1, metadataBytes.byteLength, true);
 
 						const payload = new Uint8Array(metadataBytes.length + resBytes.length + lengthBuffer.length);
 						payload.set(lengthBuffer);
