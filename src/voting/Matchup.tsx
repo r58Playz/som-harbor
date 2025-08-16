@@ -5,6 +5,7 @@ import { Button, Card, Chip, Icon, LoadingIndicator, TextFieldFilled, ToggleButt
 import iconQuickReply from "@ktibow/iconset-material-symbols/quickreply-outline";
 import iconMarkChatRead from "@ktibow/iconset-material-symbols/mark-chat-read-outline";
 import iconChatError from "@ktibow/iconset-material-symbols/chat-error-outline";
+import { settings } from "../store";
 
 const ProjectLoading: Component = function() {
 	return (
@@ -249,7 +250,7 @@ export const Matchup: Component<{ vote: VoteData }, {
 					{this.vote.remaining ? <span class="m3dl-font-headline-large">{this.vote.remaining} remaining</span> : null}
 				</div>
 				<div class="expand" />
-				<Button variant="outlined" icon="full" on:click={ai} disabled={use(this.p1, this.p2).map(([a, b]) => !a || !b)}>
+				<Button variant="outlined" icon="full" on:click={ai} disabled={use(this.p1, this.p2, settings.ai).map(([a, b, c]) => (!a || !b) && c)}>
 					{use(this.ai).map(x => {
 						if (x === "used") return <Icon icon={iconMarkChatRead} />;
 						if (x === "error") return <Icon icon={iconChatError} />;

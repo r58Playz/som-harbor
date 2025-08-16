@@ -7,10 +7,12 @@ export const settings: Stateful<{
 	epoxyVersion: string,
 	enableDoxxing: boolean,
 	enableResolving: boolean,
+	ai: boolean,
 }> = createStore({
 	token: "",
 	epoxyVersion: "",
 	enableDoxxing: false,
 	enableResolving: true,
+	ai: false,
 }, { backing: "localstorage", ident: "som-test-store", autosave: "auto" });
 (globalThis as any).settings = settings;
