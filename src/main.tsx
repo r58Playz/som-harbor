@@ -38,7 +38,7 @@ const App: Component<{}, { fetching: boolean }> = function() {
 						<li>Install this webpage as an Isolated Web App by typing in this page's URL as the "Dev Mode Proxy URL".</li>
 					</ol>
 					<div>
-						The UI below requires an admin token with access to Blazer.
+						The UI below (the vote viewer) requires an admin token with access to Blazer. The voting client can be used by anyone.
 					</div>
 				</Card>
 				<div class="controls">
