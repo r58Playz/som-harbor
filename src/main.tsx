@@ -37,11 +37,14 @@ const App: Component<{}, { fetching: boolean }> = function() {
 						<li>Go to "chrome://web-app-internals".</li>
 						<li>Install this webpage as an Isolated Web App by typing in this page's URL as the "Dev Mode Proxy URL".</li>
 					</ol>
+					<div>
+						The UI below requires an admin token with access to Blazer.
+					</div>
 				</Card>
 				<div class="controls">
 					<TextFieldFilled placeholder="_journey_session cookie" value={use(settings.token)} type="password" />
 					<Button variant="tonal" on:click={() => (this.fetching = true, fetch(() => this.fetching = false))} disabled={use(this.fetching)}>Fetch!</Button>
-					<ToggleButton variant="outlined" value={use(settings.enableDoxxing)}>Enable Doxxing</ToggleButton>
+					<ToggleButton variant="outlined" value={use(settings.enableDoxxing)}>Enable Deanon</ToggleButton>
 					<ToggleButton variant="outlined" value={use(settings.enableResolving)}>Enable Resolving</ToggleButton>
 				</div>
 				<ProjectVotes fetch={fetch} />
@@ -80,8 +83,6 @@ App.style = css`
 	.controls > :global(.m3dl-textfield) {
 		flex: 1;
 	}
-
-	ol { margin: 0; }
 `;
 
 // @ts-ignore
