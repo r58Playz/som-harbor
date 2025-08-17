@@ -16,7 +16,7 @@ export let Voting: Component<{}, { unhide: boolean }> = function() {
 	this.unhide = false;
 
 	return (
-		<div id="app">
+		<div id="app m3dl-font-body-medium">
 			<SchemeStyles scheme={scheme} motion="expressive">
 				{use(state.voteData).andThen(((x: VoteData) => <Matchup vote={x} />) as any, (
 					<div class="loading">
