@@ -16,7 +16,7 @@ export let Voting: Component<{}, { unhide: boolean }> = function() {
 	this.unhide = false;
 
 	return (
-		<div id="app" class="m3dl-font-body-medium">
+		<div id="app">
 			<SchemeStyles scheme={scheme} motion="expressive">
 				{use(state.voteData).andThen(((x: VoteData) => <Matchup vote={x} />) as any, (
 					<div class="loading">
@@ -52,7 +52,7 @@ export let Voting: Component<{}, { unhide: boolean }> = function() {
 }
 Voting.style = css`
 	:scope :global(.m3dl-scheme-styles) {
-		font: var(--m3dl-font);
+		font-family: var(--m3dl-font);
 
 		height: calc(100% - 2em);
 		background: rgb(var(--m3dl-color-background));

@@ -23,7 +23,7 @@ const App: Component<{}, { fetching: boolean }> = function() {
 	let fetch = createDelegate<() => void>();
 
 	return (
-		<div id="app" class="m3dl-font-body-medium">
+		<div id="app">
 			<SchemeStyles scheme={scheme} motion="expressive">
 				<div class="m3dl-font-display-medium">SoM Harbor</div>
 				<Card variant="filled">
@@ -54,7 +54,7 @@ const App: Component<{}, { fetching: boolean }> = function() {
 }
 App.style = css`
 	:scope :global(.m3dl-scheme-styles) {
-		font: var(--m3dl-font);
+		font-family: var(--m3dl-font);
 
 		height: calc(100% - 2em);
 		background: rgb(var(--m3dl-color-background));
