@@ -94,9 +94,13 @@ if (window.trustedTypes && window.trustedTypes.createPolicy) {
 	});
 }
 
-let app;
-if (location.protocol === "isolated-app:")
-	app = <Voting />
-else
-	app = <App />;
-document.querySelector("#app")!.replaceWith(app);
+try {
+	let app;
+	if (location.protocol === "isolated-app:")
+		app = <Voting />
+	else
+		app = <App />;
+	document.querySelector("#app")!.replaceWith(app);
+} catch (err) {
+	document.querySelector("#app")!.replaceWith(document.createTextNode((err as any).message));
+}

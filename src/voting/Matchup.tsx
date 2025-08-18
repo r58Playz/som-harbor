@@ -1,6 +1,6 @@
 import { css, jsx, type Component } from "dreamland/core";
-import { controlledFetchRedirecting, vote, type VoteData } from "./api";
-import { getProject, getUser, type ApiProject, type ApiUser } from "../api";
+import { controlledFetch, controlledFetchRedirecting, vote, type VoteData } from "./api";
+import { getCsrf, getProject, getUser, type ApiProject, type ApiUser } from "../api";
 import { Button, Card, Chip, Icon, LoadingIndicator, TextFieldFilled, ToggleButton } from "m3-dreamland";
 import iconQuickReply from "@ktibow/iconset-material-symbols/quickreply-outline";
 import iconMarkChatRead from "@ktibow/iconset-material-symbols/mark-chat-read-outline";
@@ -66,8 +66,18 @@ Image.style = css<typeof Image>`
 	}
 `;
 
-const ProjectView: Component<{ project: ApiProject }, { image: string | null, user: ApiUser | undefined }> = function(cx) {
-	let open = (link: string) => () => window.open(link, "_blank");
+const ProjectView: Component<{ project: ApiProject, id: number }, { image: string | null, user: ApiUser | undefined }> = function(cx) {
+	let open = (link: string, analytics?: "demo" | "repo") => async () => {
+		window.open(link, "_blank");
+		if (analytics) {
+			let res = await controlledFetch(`https://summer.hackclub.com/votes/track_${analytics}/${this.id}`, {
+				redirect: "manual",
+				method: "POST",
+				headers: { "X-Csrf-Token": await getCsrf() }
+			});
+			console.log("ANALYTICS", res, await res.text());
+		}
+	}
 	let user = () => this.user && window.open(`https://hackclub.slack.com/app_redirect?channel=${this.user.slack_id}`, "_blank");
 
 	cx.mount = async () => {
@@ -86,8 +96,8 @@ const ProjectView: Component<{ project: ApiProject }, { image: string | null, us
 					</Chip>
 					<Chip variant="assist" on:click={() => { }}>{formatDuration(this.project.total_seconds_coded)} coded</Chip>
 					<Chip variant="assist" on:click={() => { }}>{this.project.followers.length} followers</Chip>
-					{this.project.repo_link ? <Chip variant="suggestion" on:click={open(this.project.repo_link)}>Repo</Chip> : null}
-					{this.project.demo_link ? <Chip variant="suggestion" on:click={open(this.project.demo_link)}>Demo</Chip> : null}
+					{this.project.repo_link ? <Chip variant="suggestion" on:click={open(this.project.repo_link, "repo")}>Repo</Chip> : null}
+					{this.project.demo_link ? <Chip variant="suggestion" on:click={open(this.project.demo_link, "demo")}>Demo</Chip> : null}
 				</div>
 				<div />
 				{this.project.devlogs.sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at)).map(x => (
@@ -291,8 +301,8 @@ export const Matchup: Component<{ vote: VoteData }, {
 				<div class="turnstile-placeholder" />
 			</div>
 			<div class="matchup">
-				{use(this.p1).andThen(((x: ApiProject) => <ProjectView project={x} />) as any, <ProjectLoading />)}
-				{use(this.p2).andThen(((x: ApiProject) => <ProjectView project={x} />) as any, <ProjectLoading />)}
+				{use(this.p1).andThen(((x: ApiProject) => <ProjectView project={x} id={1} />) as any, <ProjectLoading />)}
+				{use(this.p2).andThen(((x: ApiProject) => <ProjectView project={x} id={2} />) as any, <ProjectLoading />)}
 			</div>
 			<div class="submit">
 				<ToggleButton variant="tonal" value={use(this.id).map(x => x === this.vote.vote[0], _ => this.id = this.vote.vote[0])}>

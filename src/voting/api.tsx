@@ -83,6 +83,9 @@ let argbToString = (argb: number) => `${(argb >> 16) & 255} ${(argb >> 8) & 255}
 export let ApiFrame: Component = function(cx) {
 	cx.mount = () => {
 		frame = cx.root as any as HTMLControlledFrameElement;
+		if (!frame.request.createWebRequestInterceptor)
+			throw new Error("Update your browser (ControlledFrame.request.createWebRequestInterceptor is needed). Chrome 141 is known working.");
+
 		let som = frame.request.createWebRequestInterceptor({
 			urlPatterns: ["*://summer.hackclub.com/*"],
 			includeHeaders: "all",

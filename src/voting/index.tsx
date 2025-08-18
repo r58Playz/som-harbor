@@ -40,7 +40,11 @@ export let Voting: Component<{}, { unhide: boolean }> = function() {
 						<div class="switch"><Switch value={use(this.unhide)} /> Unhide</div>
 					</div>
 				</Card>
-				<div class="frame" class:turnstile={use(state.voteData).map(x => !!x)} class:hidden={use(state.loggedIn, this.unhide).map(([a, b]) => a && !b)}>
+				<div
+					class="frame"
+					class:turnstile={use(state.voteData, this.unhide).map(([x, unhide]) => !!x && !unhide)}
+					class:hidden={use(state.loggedIn, this.unhide).map(([a, b]) => a && !b)}
+				>
 					<div class="placeholder">
 						Controlled Frame loading...
 					</div>
