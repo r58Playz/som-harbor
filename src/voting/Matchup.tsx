@@ -66,11 +66,8 @@ Image.style = css<typeof Image>`
 	}
 `;
 
-const ProjectView: Component<{ project: ApiProject, demo: boolean, repo: boolean, }, { image: string | null, user: ApiUser | undefined }> = function(cx) {
-	let open = (link: string, analytics?: "demo" | "repo") => () => {
-		window.open(link, "_blank");
-		if (analytics) this[analytics] = true;
-	}
+const ProjectView: Component<{ project: ApiProject }, { image: string | null, user: ApiUser | undefined }> = function(cx) {
+	let open = (link: string) => () => window.open(link, "_blank");
 	let user = () => this.user && window.open(`https://hackclub.slack.com/app_redirect?channel=${this.user.slack_id}`, "_blank");
 
 	cx.mount = async () => {
@@ -89,8 +86,8 @@ const ProjectView: Component<{ project: ApiProject, demo: boolean, repo: boolean
 					</Chip>
 					<Chip variant="assist" on:click={() => { }}>{formatDuration(this.project.total_seconds_coded)} coded</Chip>
 					<Chip variant="assist" on:click={() => { }}>{this.project.followers.length} followers</Chip>
-					{this.project.repo_link ? <Chip variant="suggestion" on:click={open(this.project.repo_link, "repo")}>Repo</Chip> : null}
-					{this.project.demo_link ? <Chip variant="suggestion" on:click={open(this.project.demo_link, "demo")}>Demo</Chip> : null}
+					{this.project.repo_link ? <Chip variant="suggestion" on:click={open(this.project.repo_link)}>Repo</Chip> : null}
+					{this.project.demo_link ? <Chip variant="suggestion" on:click={open(this.project.demo_link)}>Demo</Chip> : null}
 				</div>
 				<div />
 				{this.project.devlogs.sort((a, b) => +new Date(a.created_at) - +new Date(b.created_at)).map(x => (
@@ -135,10 +132,6 @@ export const Matchup: Component<{ vote: VoteData }, {
 	user: ApiUser | null,
 	p1: ApiProject | null,
 	p2: ApiProject | null,
-	p1demo: boolean,
-	p1repo: boolean,
-	p2demo: boolean,
-	p2repo: boolean,
 
 	id: number | "tie",
 	reason: string,
@@ -151,10 +144,6 @@ export const Matchup: Component<{ vote: VoteData }, {
 }> = function(cx) {
 	this.reason = "";
 	this.id = "tie" as number | "tie";
-	this.p1demo = false;
-	this.p1repo = false;
-	this.p2demo = false;
-	this.p2repo = false;
 
 	this.anon = settings.shareAnon;
 	this.sendToUser = false;
@@ -187,8 +176,6 @@ export const Matchup: Component<{ vote: VoteData }, {
 		vote({
 			id: this.id,
 			reason,
-			project: [{ repo: this.p1repo, demo: this.p1demo }, { repo: this.p2repo, demo: this.p2demo }],
-			musicPlayed: true,
 		});
 		if (settings.shareToken) {
 			let winner = this.id === this.vote.vote[0] ? this.p1 : this.p2;
@@ -301,10 +288,11 @@ export const Matchup: Component<{ vote: VoteData }, {
 						else return <Icon icon={iconQuickReply} />
 					})}
 				</Button>
+				<div class="turnstile-placeholder" />
 			</div>
 			<div class="matchup">
-				{use(this.p1).andThen(((x: ApiProject) => <ProjectView project={x} demo={use(this.p1demo)} repo={use(this.p1repo)} />) as any, <ProjectLoading />)}
-				{use(this.p2).andThen(((x: ApiProject) => <ProjectView project={x} demo={use(this.p2demo)} repo={use(this.p2repo)} />) as any, <ProjectLoading />)}
+				{use(this.p1).andThen(((x: ApiProject) => <ProjectView project={x} />) as any, <ProjectLoading />)}
+				{use(this.p2).andThen(((x: ApiProject) => <ProjectView project={x} />) as any, <ProjectLoading />)}
 			</div>
 			<div class="submit">
 				<ToggleButton variant="tonal" value={use(this.id).map(x => x === this.vote.vote[0], _ => this.id = this.vote.vote[0])}>
@@ -359,4 +347,6 @@ Matchup.style = css`
 	}
 
 	.expand { flex: 1; }
+
+	.turnstile-placeholder { flex: 0 0 302px; }
 `;

@@ -10,16 +10,9 @@ export interface VoteData {
 	vote: [number, number],
 }
 
-export interface VoteProjectRes {
-	demo: boolean,
-	repo: boolean,
-}
 export interface VoteRes {
 	id: number | "tie",
 	reason: string,
-
-	project: [VoteProjectRes, VoteProjectRes],
-	musicPlayed: boolean,
 }
 
 export let state: Stateful<{
@@ -49,6 +42,10 @@ function voteContentScript(inject: boolean) {
 
 		let data = getVoteData();
 
+		let widget = document.querySelector<HTMLElement>(".cf-turnstile")!;
+		widget.style = "position: absolute; top: 0; left: 0; z-index: 999999;";
+		while (widget.parentElement) { widget.parentElement.style.position = "static"; widget = widget.parentElement }
+
 		console.log("vote data", data);
 		try {
 			fetch("https://som-voting/vote", {
@@ -59,19 +56,6 @@ function voteContentScript(inject: boolean) {
 
 		(window as any).harborSubmitVote = (res: VoteRes) => {
 			const form = document.querySelector<HTMLFormElement>(`[action="/votes"]`)!;
-
-			function handleProject(project: VoteProjectRes, number: number) {
-				let repo = form.querySelector<HTMLInputElement>(`input[name="vote[project_${number}_repo_opened]"]`)!;
-				let demo = form.querySelector<HTMLInputElement>(`input[name="vote[project_${number}_demo_opened]"]`)!;
-				repo.value = "" + project.repo;
-				demo.value = "" + project.demo;
-			}
-
-			handleProject(res.project[0], 1);
-			handleProject(res.project[1], 2);
-
-			let music = form.querySelector<HTMLInputElement>(`input[name="vote[music_played]"]`)!;
-			music.value = "" + res.musicPlayed;
 
 			let project = form.querySelector<HTMLInputElement>(`input[name="vote[winning_project_id]"][value="${res.id}"]`)!;
 			project.click();

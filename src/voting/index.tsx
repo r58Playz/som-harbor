@@ -40,7 +40,7 @@ export let Voting: Component<{}, { unhide: boolean }> = function() {
 						<div class="switch"><Switch value={use(this.unhide)} /> Unhide</div>
 					</div>
 				</Card>
-				<div class="frame" class:hidden={use(state.loggedIn, this.unhide).map(([a, b]) => a && !b)}>
+				<div class="frame" class:turnstile={use(state.voteData).map(x => !!x)} class:hidden={use(state.loggedIn, this.unhide).map(([a, b]) => a && !b)}>
 					<div class="placeholder">
 						Controlled Frame loading...
 					</div>
@@ -77,6 +77,15 @@ Voting.style = css`
 	}
 	.frame.hidden {
 		display: none;
+	}
+	.frame.turnstile {
+		display: block;
+		position: absolute;
+		top: 0.25rem;
+		right: 1rem;
+		width: 300px;
+		height: 65px;
+		border-radius: 0;
 	}
 	.frame > :global(*) {
 		position: absolute;
