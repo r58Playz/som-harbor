@@ -20,11 +20,17 @@ async function evictEpoxy() {
 }
 
 async function instantiateEpoxy() {
-	if (!cache) cache = await window.caches.open("epoxy");
-	if (!(await cache.match(EPOXY_PATH))) {
-		await cache.add(EPOXY_PATH);
+	let module;
+	try {
+		if (!cache) cache = await window.caches.open("epoxy");
+		if (!(await cache.match(EPOXY_PATH))) {
+			await cache.add(EPOXY_PATH);
+		}
+		module = await cache.match(EPOXY_PATH);
+	} catch {
+		console.log("CACHE FAILED");
+		module = await fetch(EPOXY_PATH);
 	}
-	const module = await cache.match(EPOXY_PATH);
 	await epoxyInit({ module_or_path: module });
 	initted = true;
 }
