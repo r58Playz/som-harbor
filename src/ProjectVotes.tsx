@@ -165,7 +165,9 @@ let VoteView: Component<{ vote: Vote }, {
 					<Chip variant="assist" on:click={() => { }}>{new Date(this.vote.created_at).toLocaleString()}</Chip>
 					<Chip variant="assist" on:click={() => { }}>{this.vote.status}</Chip>
 					<Chip variant="assist" on:click={() => { }}>{(this.vote.time_spent_voting_ms / 1000).toFixed(1)}s spent</Chip>
-					<Chip variant="assist" on:click={() => { }}>Elo: {this.vote.elo_delta}</Chip>
+					<Chip variant="assist" on:click={() => { }}>
+						{this.vote.elo_before} {this.vote.elo_delta > 0 ? "+" : "-"} {Math.abs(this.vote.elo_delta)} = {this.vote.elo_after}
+					</Chip>
 					<Doxx><Chip variant="assist" on:click={user}>Slack: {use(this.user).map(x => x && `${x.display_name} (${x.slack_id})` || "unknown")}</Chip></Doxx>
 					<Doxx><Chip variant="assist" on:click={somUser}>SoM: {this.vote.user_id}</Chip></Doxx>
 				</div>
@@ -208,6 +210,7 @@ VoteView.style = css`
 
 	.chips {
 		display: flex;
+		flex-wrap: wrap;
 		gap: 0.5rem;
 	}
 
@@ -225,18 +228,22 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 	user: ApiUser | undefined,
 	votes: Vote[],
 	elo: number,
+	unfilteredElo: number,
 }> = function(cx) {
 	this.project = "";
 	this.votes = [];
 	this.elo = 0;
+	this.unfilteredElo = 0;
 
 	cx.mount = async () => {
 		this.user = await getUser("me");
 	}
 
 	this.fetch.listen(async x => {
-		this.votes = await fetchVotes(+this.project).then(x => x.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)));
+		this.votes = await fetchVotes(+this.project).then(x => x.sort((a, b) => b.project_vote_count - a.project_vote_count));
+		console.log(this.votes);
 		this.elo = this.votes.filter(x => x.status === "active").reduce((acc, x) => acc + x.elo_delta, 1100);
+		this.unfilteredElo = this.votes[0].elo_after;
 		x();
 	});
 
@@ -249,7 +256,7 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 				))}
 			</div>
 			<div>
-				{use(this.votes).map(x => x.length)} votes displayed{use(this.elo).andThen((x: number) => `, ${x} elo`)}
+				{use(this.votes).map(x => x.length)} ({use(this.votes).map(x=>x.filter(x => x.status === "active").length)} active) votes displayed{use(this.elo).andThen((x: number) => `, ${x} elo`)}{use(this.unfilteredElo).andThen((x: number) => `, ${x} unfiltered elo`)}
 			</div>
 			{use(this.votes).mapEach(x => <VoteView vote={x} />)}
 		</div>
