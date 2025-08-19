@@ -146,6 +146,7 @@ let VoteView: Component<{ vote: Vote }, {
 	};
 
 	let user = () => this.user && window.open(`https://hackclub.slack.com/app_redirect?channel=${this.user.slack_id}`, "_blank");
+	let somUser = () => window.open(`https://summer.hackclub.com/admin/users/${this.vote.user_id}`, "_blank");
 
 	let project1Name = use(this.project1).map(x => x?.title || this.vote.project_1_id);
 	let project2Name = use(this.project2).map(x => x?.title || this.vote.project_2_id);
@@ -162,10 +163,11 @@ let VoteView: Component<{ vote: Vote }, {
 				</div>
 				<div class="chips">
 					<Chip variant="assist" on:click={() => { }}>{new Date(this.vote.created_at).toLocaleString()}</Chip>
-					<Chip variant="assist" on:click={() => { }}>State: {this.vote.status}</Chip>
-					<Chip variant="assist" on:click={() => { }}>Delta: {this.vote.elo_delta}</Chip>
-					<Doxx><Chip variant="assist" on:click={user}>By {use(this.user).map(x => x && `${x.display_name} (${x.slack_id} - ${this.vote.user_id})` || this.vote.user_id)}</Chip></Doxx>
+					<Chip variant="assist" on:click={() => { }}>{this.vote.status}</Chip>
 					<Chip variant="assist" on:click={() => { }}>{(this.vote.time_spent_voting_ms / 1000).toFixed(1)}s spent</Chip>
+					<Chip variant="assist" on:click={() => { }}>Elo: {this.vote.elo_delta}</Chip>
+					<Doxx><Chip variant="assist" on:click={user}>Slack: {use(this.user).map(x => x && `${x.display_name} (${x.slack_id})` || "unknown")}</Chip></Doxx>
+					<Doxx><Chip variant="assist" on:click={somUser}>SoM: {this.vote.user_id}</Chip></Doxx>
 				</div>
 				<div class="side">
 					<Card variant="outlined">
@@ -174,7 +176,7 @@ let VoteView: Component<{ vote: Vote }, {
 						</div>
 						{this.vote.invalid_reason &&
 							<div>
-								<div class="m3dl-font-body-large">Marked Invalid</div>
+								<span class="m3dl-font-body-large"><b>Marked Invalid: </b></span>
 								{this.vote.invalid_reason}
 							</div>
 						}
@@ -234,7 +236,7 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 
 	this.fetch.listen(async x => {
 		this.votes = await fetchVotes(+this.project).then(x => x.sort((a, b) => +new Date(b.created_at) - +new Date(a.created_at)));
-		this.elo = this.votes[0]?.elo_after || 0;
+		this.elo = this.votes.filter(x => x.status === "active").reduce((acc, x) => acc + x.elo_delta, 1100);
 		x();
 	});
 
