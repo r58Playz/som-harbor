@@ -256,7 +256,9 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 				))}
 			</div>
 			<div>
-				{use(this.votes).map(x => x.length)} ({use(this.votes).map(x=>x.filter(x => x.status === "active").length)} active) votes displayed{use(this.elo).andThen((x: number) => `, ${x} elo`)}{use(this.unfilteredElo).andThen((x: number) => `, ${x} unfiltered elo`)}
+				{use(this.votes).map(x => x.length)} - {use(this.votes).map(x=>x.filter(x => x.result === "win").length)} wins {use(this.votes).map(x=>x.filter(x => x.result === "loss").length)} losses
+				{' '}({use(this.votes).map(x=>x.filter(x => x.status === "active").length)} active)
+				{' '}displayed{use(this.elo).andThen((x: number) => `, ${x} elo`)}{use(this.unfilteredElo).andThen((x: number) => `, ${x} unfiltered elo`)}
 			</div>
 			{use(this.votes).mapEach(x => <VoteView vote={x} />)}
 		</div>
