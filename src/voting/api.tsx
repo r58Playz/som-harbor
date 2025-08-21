@@ -19,9 +19,11 @@ export interface VoteRes {
 export let state: Stateful<{
 	loggedIn: boolean,
 	voteData: VoteData | null,
+	turnstileFinished: boolean,
 }> = createState({
 	loggedIn: false,
 	voteData: null,
+	turnstileFinished: false,
 });
 
 function voteContentScript(inject: boolean) {
@@ -52,6 +54,27 @@ function voteContentScript(inject: boolean) {
 		let widget = document.querySelector<HTMLElement>(".cf-turnstile")!;
 		widget.style = "position: absolute; top: 0; left: 0; z-index: 999999;";
 		while (widget.parentElement) { widget.parentElement.style.position = "static"; widget = widget.parentElement }
+
+		let finished = false;
+		setInterval(() => {
+			let old = finished;
+
+			let res = (self as any).turnstile.getResponse();
+			if (res && !finished) {
+				finished = true;
+			} else if (!res) {
+				finished = false;
+			}
+
+			if (old !== finished) {
+				try {
+					fetch("https://som-turnstile/turnstile", {
+						method: "POST",
+						body: JSON.stringify({ finished }),
+					});
+				} catch { }
+			}
+		}, 100);
 
 		console.log("vote data", data);
 		try {
@@ -137,6 +160,23 @@ export let ApiFrame: Component = function(cx) {
 			let res = JSON.parse(decoder.decode(body));
 			console.log(res);
 			state.voteData = res;
+		});
+
+		let turnstile = frame.request.createWebRequestInterceptor({
+			urlPatterns: ["https://som-turnstile/*"],
+			includeHeaders: "all",
+			includeRequestBody: true,
+			blocking: true,
+		});
+		turnstile.addEventListener("beforerequest", ev => {
+			let e = ev as any as WebRequestBeforeRequestEvent;
+			e.preventDefault();
+
+			let body = e.request.body?.raw?.[0]?.bytes;
+			if (!body) throw new Error("invalid turnstile response");
+			let res = JSON.parse(decoder.decode(body));
+			console.log(res);
+			state.turnstileFinished = res.finished;
 		});
 
 		frame.addContentScripts([{

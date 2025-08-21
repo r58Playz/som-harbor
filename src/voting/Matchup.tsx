@@ -1,5 +1,5 @@
 import { css, jsx, type Component } from "dreamland/core";
-import { controlledFetch, controlledFetchRedirecting, vote, type VoteData } from "./api";
+import { controlledFetch, controlledFetchRedirecting, state, vote, type VoteData } from "./api";
 import { getCsrf, getProject, getUser, type ApiProject, type ApiUser } from "../api";
 import { Button, Card, Chip, Icon, LoadingIndicator, TextFieldFilled, ToggleButton } from "m3-dreamland";
 import iconQuickReply from "@ktibow/iconset-material-symbols/quickreply-outline";
@@ -317,10 +317,16 @@ export const Matchup: Component<{ vote: VoteData }, {
 				<TextFieldFilled
 					value={use(this.reason)}
 					placeholder="Reason"
-					supporting={use(this.reason).map(x=>x.length < 100 ? `${100-x.length} chars needed` : `${x.length} chars used`)}
+					supporting={use(this.reason).map(x => x.length < 100 ? `${100 - x.length} chars needed` : `${x.length} chars used`)}
 					multiline={true}
 				/>
-				<Button variant="filled" disabled={use(this.submitting, this.reason).map(([submitting, reason]) => submitting || reason.length < 100)} on:click={submit}>Submit</Button>
+				<Button
+					variant="filled"
+					disabled={use(this.submitting, this.reason, state.turnstileFinished).map(([submitting, reason, turnstile]) => submitting || !turnstile || reason.length < 100)}
+					on:click={submit}
+				>
+					Submit
+				</Button>
 			</div>
 		</div>
 	)
