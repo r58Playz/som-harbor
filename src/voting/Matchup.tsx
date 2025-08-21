@@ -215,7 +215,7 @@ export const Matchup: Component<{ vote: VoteData }, {
 		this.ai = "loading";
 
 		try {
-			let res = await fetch("https://ai.hackclub.com/chat/completions", {
+			let res = await controlledFetch("https://ai.hackclub.com/chat/completions", {
 				method: "POST",
 				headers: { "content-type": "application/json" },
 				body: JSON.stringify({
@@ -284,8 +284,8 @@ export const Matchup: Component<{ vote: VoteData }, {
 		<div>
 			<div class="status">
 				<div>
-					<span class="m3dl-font-display-medium">Matchup </span>
-					{this.vote.remaining ? <span class="m3dl-font-headline-large">{this.vote.remaining} remaining</span> : null}
+					<span class="m3dl-font-display-medium">{this.vote.remaining} remaining</span>
+					{!this.vote.accepted ? <span class="m3dl-font-headline-large rejected"> <b>Vote was rejected</b></span> : null}
 				</div>
 				<div class="expand" />
 				<ToggleButton variant="outlined" value={use(this.anon)}>Send anonymously</ToggleButton>
@@ -314,8 +314,13 @@ export const Matchup: Component<{ vote: VoteData }, {
 				<ToggleButton variant="tonal" value={use(this.id).map(x => x === this.vote.vote[1], _ => this.id = this.vote.vote[1])}>
 					{use(this.p2).map(x => x?.title || this.vote.vote[1])}
 				</ToggleButton>
-				<TextFieldFilled value={use(this.reason)} placeholder="Reason" multiline={true} />
-				<Button variant="filled" disabled={use(this.submitting)} on:click={submit}>Submit</Button>
+				<TextFieldFilled
+					value={use(this.reason)}
+					placeholder="Reason"
+					supporting={use(this.reason).map(x=>x.length < 100 ? `${100-x.length} chars needed` : `${x.length} chars used`)}
+					multiline={true}
+				/>
+				<Button variant="filled" disabled={use(this.submitting, this.reason).map(([submitting, reason]) => submitting || reason.length < 100)} on:click={submit}>Submit</Button>
 			</div>
 		</div>
 	)
@@ -359,4 +364,6 @@ Matchup.style = css`
 	.expand { flex: 1; }
 
 	.turnstile-placeholder { flex: 0 0 302px; }
+
+	.rejected { color: rgb(var(--m3dl-color-error)); }
 `;

@@ -8,6 +8,7 @@ let decoder = new TextDecoder();
 export interface VoteData {
 	remaining: number,
 	vote: [number, number],
+	accepted: boolean,
 }
 
 export interface VoteRes {
@@ -34,10 +35,16 @@ function voteContentScript(inject: boolean) {
 
 	if (location.pathname === "/votes/new") {
 		function getVoteData() {
-			let ids = [...document.querySelectorAll<HTMLInputElement>(`[name='fraud_report[suspect_id]']`)].map(x => +x.value);
 			let remainingText = document.querySelector<HTMLParagraphElement>(`[data-sidebar-target="mainContent"] p.text-nice-blue`)?.innerText || "";
 			let remaining = +(/vote ([0-9]*) more times/.exec(remainingText)?.[1] || '0');
-			return { remaining, vote: ids };
+
+			let notAccepted = document.querySelector("#vote-rejected-modal");
+			let accepted = !notAccepted;
+			if (notAccepted) notAccepted.dispatchEvent(new Event("click"));
+
+			let ids = [...document.querySelectorAll<HTMLInputElement>(`[name='fraud_report[suspect_id]']`)].map(x => +x.value);
+
+			return { remaining, vote: ids, accepted };
 		}
 
 		let data = getVoteData();
@@ -64,6 +71,7 @@ function voteContentScript(inject: boolean) {
 			reason.value = res.reason;
 
 			let submit = form.querySelector<HTMLButtonElement>(`button[data-form-target="submitButton"]`)!;
+			submit.disabled = false;
 			submit.click();
 
 			let interval = setInterval(() => {
