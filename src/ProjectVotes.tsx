@@ -247,6 +247,9 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 		x();
 	});
 
+	let votes = use(this.votes);
+	let filtered = use(this.votes).map(x => x.filter(x => x.status === "active"));
+
 	return (
 		<div>
 			<TextFieldFilled value={use(this.project)} placeholder="Project ID" />
@@ -256,8 +259,8 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 				))}
 			</div>
 			<div>
-				{use(this.votes).map(x => x.length)} - {use(this.votes).map(x=>x.filter(x => x.result === "win").length)} wins {use(this.votes).map(x=>x.filter(x => x.result === "loss").length)} losses
-				{' '}({use(this.votes).map(x=>x.filter(x => x.status === "active").length)} active)
+				{votes.map(x => x.length)} - {votes.map(x => x.filter(x => x.result === "win").length)} wins {votes.map(x => x.filter(x => x.result === "loss").length)} losses
+				{' '}({filtered.map(x => x.length)} active - {filtered.map(x => x.filter(x => x.result === "win").length)} wins {filtered.map(x => x.filter(x => x.result === "loss").length)} losses)
 				{' '}displayed{use(this.elo).andThen((x: number) => `, ${x} elo`)}{use(this.unfilteredElo).andThen((x: number) => `, ${x} unfiltered elo`)}
 			</div>
 			{use(this.votes).mapEach(x => <VoteView vote={x} />)}

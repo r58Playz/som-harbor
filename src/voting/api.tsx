@@ -51,7 +51,7 @@ function voteContentScript(inject: boolean) {
 
 		let data = getVoteData();
 
-		let widget = document.querySelector<HTMLElement>(".cf-turnstile")!;
+		let widget = document.querySelector<HTMLElement>(`[data-controller="turnstile"]`)!;
 		widget.style = "position: absolute; top: 0; left: 0; z-index: 999999;";
 		while (widget.parentElement) { widget.parentElement.style.position = "static"; widget = widget.parentElement }
 
@@ -274,70 +274,71 @@ export async function controlledFetch(
 	const exfilUrl = `https://data-exfil.internal/${crypto.randomUUID()}`;
 
 	return await new Promise(async (resolve, reject) => {
-		const interceptor = frame.request.createWebRequestInterceptor({
-			urlPatterns: [exfilUrl, url],
-			blocking: true,
-			includeRequestBody: true,
-		});
+		try {
+			const interceptor = frame.request.createWebRequestInterceptor({
+				urlPatterns: [exfilUrl, url.replaceAll("(", "\\(").replaceAll(")", "\\)")],
+				blocking: true,
+				includeRequestBody: true,
+			});
 
-		let redirect: string | null = null;
-		let redirectStatus: number | null = null;
-		interceptor.addEventListener("beforeredirect", ((e: WebRequestBeforeRedirectEvent) => {
-			if (options?.redirect === "manual")
-				redirectStatus = e.response.statusCode;
-			redirect = e.response.redirectURL!;
-		}) as any);
+			let redirect: string | null = null;
+			let redirectStatus: number | null = null;
+			interceptor.addEventListener("beforeredirect", ((e: WebRequestBeforeRedirectEvent) => {
+				if (options?.redirect === "manual")
+					redirectStatus = e.response.statusCode;
+				redirect = e.response.redirectURL!;
+			}) as any);
 
-		interceptor.addEventListener("beforerequest", ((e: WebRequestBeforeRequestEvent) => {
-			if (e.request.url !== exfilUrl) return;
+			interceptor.addEventListener("beforerequest", ((e: WebRequestBeforeRequestEvent) => {
+				if (e.request.url !== exfilUrl) return;
 
-			e.preventDefault();
-			try {
-				const buffer = e.request.body?.raw?.[0]?.bytes;
-				if (!buffer) throw new Error("No data received from frame.");
+				e.preventDefault();
+				try {
+					const buffer = e.request.body?.raw?.[0]?.bytes;
+					if (!buffer) throw new Error("No data received from frame.");
 
-				// Check the first byte to see if the payload is a JSON error object.
-				if (new Uint8Array(buffer, 0, 1)[0] === 0x7b /* '{' */) {
-					const err = JSON.parse(new TextDecoder().decode(buffer));
-					reject(new Error(err.message));
-				} else {
-					// Otherwise, reconstruct the Response object from the byte stream.
-					const view = new DataView(buffer);
-					const metaLen = view.getUint32(1, true);
-					const meta = JSON.parse(new TextDecoder().decode(buffer.slice(5, 5 + metaLen)));
-					const body = buffer.slice(5 + metaLen);
+					// Check the first byte to see if the payload is a JSON error object.
+					if (new Uint8Array(buffer, 0, 1)[0] === 0x7b /* '{' */) {
+						const err = JSON.parse(new TextDecoder().decode(buffer));
+						reject(new Error(err.message));
+					} else {
+						// Otherwise, reconstruct the Response object from the byte stream.
+						const view = new DataView(buffer);
+						const metaLen = view.getUint32(1, true);
+						const meta = JSON.parse(new TextDecoder().decode(buffer.slice(5, 5 + metaLen)));
+						const body = buffer.slice(5 + metaLen);
 
-					let bodyUsed = false;
-					const customResponse: any = {
-						headers: new Headers(meta.headers),
-						ok: meta.ok,
-						redirected: meta.redirected,
-						status: redirectStatus || meta.status,
-						statusText: meta.statusText,
-						type: meta.type,
-						url: redirect || meta.url,
-						get bodyUsed() { return bodyUsed; },
-						arrayBuffer: () => {
-							if (bodyUsed) return Promise.reject(new TypeError("Body already used"));
-							bodyUsed = true;
-							return Promise.resolve(body);
-						},
-						blob: () => customResponse.arrayBuffer().then((b: any) => new Blob([b], { type: meta.contentType })),
-						text: () => customResponse.arrayBuffer().then((b: any) => new TextDecoder().decode(b)),
-						json: () => customResponse.text().then(JSON.parse),
-					};
-					resolve(customResponse);
+						let bodyUsed = false;
+						const customResponse: any = {
+							headers: new Headers(meta.headers),
+							ok: meta.ok,
+							redirected: meta.redirected,
+							status: redirectStatus || meta.status,
+							statusText: meta.statusText,
+							type: meta.type,
+							url: redirect || meta.url,
+							get bodyUsed() { return bodyUsed; },
+							arrayBuffer: () => {
+								if (bodyUsed) return Promise.reject(new TypeError("Body already used"));
+								bodyUsed = true;
+								return Promise.resolve(body);
+							},
+							blob: () => customResponse.arrayBuffer().then((b: any) => new Blob([b], { type: meta.contentType })),
+							text: () => customResponse.arrayBuffer().then((b: any) => new TextDecoder().decode(b)),
+							json: () => customResponse.text().then(JSON.parse),
+						};
+						resolve(customResponse);
+					}
+				} catch (error) {
+					reject(error);
 				}
-			} catch (error) {
-				reject(error);
-			}
-		}) as any);
+			}) as any);
 
-		// Serialize the body into a Uint8Array.
-		const bodyBytes = options?.body ? new Uint8Array(await request.arrayBuffer()) : null;
+			// Serialize the body into a Uint8Array.
+			const bodyBytes = options?.body ? new Uint8Array(await request.arrayBuffer()) : null;
 
-		// The new injected code now accepts a `bodyBytes` argument.
-		const injectedCode = `
+			// The new injected code now accepts a `bodyBytes` argument.
+			const injectedCode = `
 				(async (bodyBytes) => {
 					try {
 						const options = ${JSON.stringify(Object.assign({}, options, { body: undefined }))};
@@ -372,7 +373,10 @@ export async function controlledFetch(
 				})(${bodyBytes ? 'new Uint8Array([' + Array.from(bodyBytes).join(',') + '])' : 'null'});
 			`;
 
-		frame.executeScript({ code: injectedCode }).catch(reject);
+			frame.executeScript({ code: injectedCode }).catch(reject);
+		} catch (err) {
+			console.warn("FETCH FAILED", err, url);
+		}
 	});
 }
 (self as any).controlledFetch = controlledFetch;

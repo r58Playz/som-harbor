@@ -1,7 +1,7 @@
 import { css, jsx, type Component } from "dreamland/core";
 import { controlledFetch, controlledFetchRedirecting, state, vote, type VoteData } from "./api";
 import { getCsrf, getProject, getUser, type ApiProject, type ApiUser } from "../api";
-import { Button, Card, Chip, Icon, LoadingIndicator, TextFieldFilled, ToggleButton } from "m3-dreamland";
+import { Button, Card, Chip, Icon, LinearProgress, LoadingIndicator, TextFieldFilled, ToggleButton } from "m3-dreamland";
 import iconQuickReply from "@ktibow/iconset-material-symbols/quickreply-outline";
 import iconMarkChatRead from "@ktibow/iconset-material-symbols/mark-chat-read-outline";
 import iconChatError from "@ktibow/iconset-material-symbols/chat-error-outline";
@@ -151,6 +151,8 @@ export const Matchup: Component<{ vote: VoteData }, {
 
 	submitting: boolean,
 	ai: "used" | "error" | "loading" | undefined,
+
+	timer: number,
 }> = function(cx) {
 	this.reason = "";
 	this.id = "tie" as number | "tie";
@@ -159,6 +161,9 @@ export const Matchup: Component<{ vote: VoteData }, {
 	this.sendToUser = false;
 
 	this.submitting = false;
+
+	let TIMER_MAX = 45 * 1000;
+	this.timer = TIMER_MAX;
 
 	let setting = true;
 	use(this.sendToUser, this.anon).listen(([sendToUser, anon]) => {
@@ -178,6 +183,11 @@ export const Matchup: Component<{ vote: VoteData }, {
 		this.p1 = await getProject(this.vote.vote[0]);
 		this.p2 = await getProject(this.vote.vote[1]);
 		console.log(this.p1, this.p2);
+
+		let interval = setInterval(() => {
+			this.timer -= 100;
+			if (this.timer === 0) clearInterval(interval);
+		}, 100);
 	}
 
 	const submit = () => {
@@ -328,6 +338,7 @@ export const Matchup: Component<{ vote: VoteData }, {
 					Submit
 				</Button>
 			</div>
+			<LinearProgress progress={use(this.timer).map(x => x * 100 / TIMER_MAX)} />
 		</div>
 	)
 }
