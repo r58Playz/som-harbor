@@ -162,6 +162,7 @@ let VoteView: Component<{ vote: Vote }, {
 					({this.vote.result})
 				</div>
 				<div class="chips">
+					<Chip variant="assist" on:click={() => { }}>{this.vote.id}</Chip>
 					<Chip variant="assist" on:click={() => { }}>{new Date(this.vote.created_at).toLocaleString()}</Chip>
 					<Chip variant="assist" on:click={() => { }}>{this.vote.status}</Chip>
 					<Chip variant="assist" on:click={() => { }}>{(this.vote.time_spent_voting_ms / 1000).toFixed(1)}s spent</Chip>
@@ -227,13 +228,15 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 	project: string,
 	user: ApiUser | undefined,
 	votes: Vote[],
-	elo: number,
+	recalculatedElo: number,
 	unfilteredElo: number,
+	elo: number,
 }> = function(cx) {
 	this.project = "";
 	this.votes = [];
-	this.elo = 0;
+	this.recalculatedElo = 0;
 	this.unfilteredElo = 0;
+	this.elo = 0;
 
 	cx.mount = async () => {
 		this.user = await getUser("me");
@@ -242,8 +245,9 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 	this.fetch.listen(async x => {
 		this.votes = await fetchVotes(+this.project).then(x => x.sort((a, b) => b.project_vote_count - a.project_vote_count));
 		console.log(this.votes);
-		this.elo = this.votes.filter(x => x.status === "active").reduce((acc, x) => acc + x.elo_delta, 1100);
-		this.unfilteredElo = this.votes[0].elo_after;
+		this.recalculatedElo = this.votes.filter(x => x.status === "active").reduce((acc, x) => acc + x.elo_delta, 1100);
+		this.unfilteredElo = this.votes.reduce((acc, x) => acc + x.elo_delta, 1100);;
+		this.elo = this.votes[0].elo_after;
 		x();
 	});
 
@@ -261,7 +265,7 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 			<div>
 				{votes.map(x => x.length)} - {votes.map(x => x.filter(x => x.result === "win").length)} wins {votes.map(x => x.filter(x => x.result === "loss").length)} losses
 				{' '}({filtered.map(x => x.length)} active - {filtered.map(x => x.filter(x => x.result === "win").length)} wins {filtered.map(x => x.filter(x => x.result === "loss").length)} losses)
-				{' '}displayed{use(this.elo).andThen((x: number) => `, ${x} elo`)}{use(this.unfilteredElo).andThen((x: number) => `, ${x} unfiltered elo`)}
+				{' '}displayed, {use(this.recalculatedElo)} recalculated elo, {use(this.elo)} elo, {use(this.unfilteredElo)} unfiltered elo
 			</div>
 			{use(this.votes).mapEach(x => <VoteView vote={x} />)}
 		</div>
