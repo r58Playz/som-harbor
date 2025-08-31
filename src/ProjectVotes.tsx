@@ -1,8 +1,15 @@
 import { css, type Component, type Delegate } from "dreamland/core";
 import { dbBool, fetchDb, getProject, getUser, type ApiProject, type ApiUser } from "./api";
-import { Card, Chip, TextFieldFilled } from "m3-dreamland";
+import { Card, Chip, hexFromArgb, TextFieldFilled } from "m3-dreamland";
 import { Doxx } from "./utils";
 import { settings } from "./store";
+import { scheme } from "./main";
+
+import Chart, { type ChartData } from "chart.js/auto";
+import "chartjs-adapter-luxon";
+import zoom from "chartjs-plugin-zoom";
+
+Chart.register(zoom);
 
 interface DbVote {
 	id: number,
@@ -224,6 +231,105 @@ VoteView.style = css`
 	}
 `;
 
+export let ProjectVoteGraph: Component<{ votes: Vote[] }, { canvas: HTMLCanvasElement }> = function(cx) {
+	let data = () => ({
+		datasets: [
+			{
+				label: "ELO",
+				data: this.votes.map(x => ({ x: +new Date(x.created_at), y: x.elo_after, vote: x })),
+				backgroundColor: hexFromArgb(scheme.primaryContainer),
+				borderColor: hexFromArgb(scheme.primary),
+				parsing: false,
+			}
+		]
+	} as ChartData<"line">);
+
+	cx.mount = () => {
+		let chart = new Chart(this.canvas, {
+			type: "line",
+			data: data(),
+			options: {
+				maintainAspectRatio: false,
+				color: hexFromArgb(scheme.onSurface),
+				scales: {
+					y: {
+						border: {
+							color: hexFromArgb(scheme.outlineVariant),
+						},
+						ticks: {
+							color: hexFromArgb(scheme.onSurfaceVariant),
+						},
+						grid: {
+							color: hexFromArgb(scheme.outlineVariant),
+						},
+					},
+					x: {
+						type: "time",
+						border: {
+							color: hexFromArgb(scheme.outlineVariant),
+						},
+						ticks: {
+							color: hexFromArgb(scheme.onSurfaceVariant),
+						},
+						grid: {
+							color: hexFromArgb(scheme.outlineVariant),
+						}
+					}
+				},
+				plugins: {
+					zoom: {
+						pan: { enabled: true, mode: "x" },
+						zoom: {
+							mode: "x",
+							wheel: { enabled: true, },
+							pinch: { enabled: true }
+						},
+					},
+					tooltip: {
+						displayColors: false,
+						backgroundColor: hexFromArgb(scheme.surface),
+						titleColor: hexFromArgb(scheme.onSurface),
+						bodyColor: hexFromArgb(scheme.onSurfaceVariant),
+						footerColor: hexFromArgb(scheme.onSurfaceVariant),
+						callbacks: {
+							title: (context) => context[0].label || '',
+							footer: (context) => {
+								let vote = (context[0].raw as any).vote as Vote;
+								return `ID ${vote.id}. ${vote.project_1_id} vs ${vote.project_2_id} -> ${vote.result} (${vote.elo_delta}) by ${vote.user_id}`;
+							}
+						}
+					},
+					legend: { display: false },
+					title: {
+						display: true,
+						color: hexFromArgb(scheme.onSurface),
+						text: "Project ELO over time"
+					}
+				},
+			}
+		});
+
+		use(this.votes).listen(_ => {
+			chart.data = data();
+			chart.update();
+		});
+	}
+
+	return (
+		<div>
+			<Card variant="filled">
+				<canvas this={use(this.canvas)} />
+			</Card>
+		</div>
+	)
+}
+ProjectVoteGraph.style = css`
+	:scope > :global(.m3dl-card) {
+		position: relative;
+		height: 32rem;
+	}
+`;
+
 export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 	project: string,
 	user: ApiUser | undefined,
@@ -267,6 +373,7 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 				{' '}({filtered.map(x => x.length)} active - {filtered.map(x => x.filter(x => x.result === "win").length)} wins {filtered.map(x => x.filter(x => x.result === "loss").length)} losses)
 				{' '}displayed, {use(this.recalculatedElo)} recalculated elo, {use(this.elo)} elo, {use(this.unfilteredElo)} unfiltered elo
 			</div>
+			<ProjectVoteGraph votes={use(this.votes).map(x => x.filter(x => x.status === "active"))} />
 			{use(this.votes).mapEach(x => <VoteView vote={x} />)}
 		</div>
 	)

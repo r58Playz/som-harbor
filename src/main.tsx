@@ -10,7 +10,7 @@ import "./ProjectVotes";
 import { ProjectVotes } from "./ProjectVotes";
 import { Voting } from "./voting";
 
-let scheme = new DynamicScheme({
+export let scheme = new DynamicScheme({
 	sourceColorHct: Hct.fromInt(argbFromHex("CBA6F7")),
 	contrastLevel: 0,
 	specVersion: "2025",
