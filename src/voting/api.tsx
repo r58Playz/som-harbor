@@ -5,6 +5,61 @@ import { setFetchCookieBackend } from "../api";
 
 let decoder = new TextDecoder();
 
+let cachedIncludeHeadersValue: "all" | "cross-origin" | null = null;
+
+function getIncludeHeadersValue(): Promise<"all" | "cross-origin"> {
+	// If the result has already been cached, return it immediately.
+	if (cachedIncludeHeadersValue !== null) {
+		return Promise.resolve(cachedIncludeHeadersValue);
+	}
+
+	return new Promise((resolve, reject) => {
+		// --- Feature Detection Logic ---
+		// The most reliable way to check for a specific API behavior is to test it.
+		// We'll create a dummy ControlledFrame and test its behavior.
+		const tempFrame = <controlledframe
+			partition="persist:feature-detection-test"
+			src="about:blank"
+			style="display: none;"
+		/> as any as HTMLControlledFrameElement;
+
+		// We add the frame directly to the document body.
+		document.body.appendChild(tempFrame);
+
+		// Add an event listener to ensure the frame is ready before testing.
+		tempFrame.addEventListener("contentload", () => {
+			try {
+				// We expect a TypeError on older, unsupported implementations when we try to
+				// use the "all" value.
+				tempFrame.request.createWebRequestInterceptor({
+					urlPatterns: ["*://*/*"],
+					includeHeaders: "all",
+					blocking: false,
+				});
+				// If the above line succeeds, it means "all" is supported.
+				cachedIncludeHeadersValue = "all";
+			} catch (e) {
+				console.log(e);
+				cachedIncludeHeadersValue = "cross-origin";
+			} finally {
+				// Clean up the temporary frame from the DOM.
+				document.body.removeChild(tempFrame);
+				console.log(`Feature detection result: Using includeHeaders value "${cachedIncludeHeadersValue}"`);
+				if (cachedIncludeHeadersValue) {
+					resolve(cachedIncludeHeadersValue);
+				} else {
+					// Fallback in case of unexpected `finally` behavior
+					reject(new Error("Failed to determine includeHeaders value."));
+				}
+			}
+		});
+
+		tempFrame.addEventListener("error", (e) => {
+			reject(e);
+		});
+	});
+}
+
 export interface VoteData {
 	remaining: number,
 	vote: [number, number],
@@ -112,14 +167,14 @@ let frame: HTMLControlledFrameElement;
 
 let argbToString = (argb: number) => `${(argb >> 16) & 255} ${(argb >> 8) & 255} ${argb & 255}`;
 export let ApiFrame: Component = function(cx) {
-	cx.mount = () => {
+	cx.mount = async () => {
 		frame = cx.root as any as HTMLControlledFrameElement;
 		if (!frame.request.createWebRequestInterceptor)
 			throw new Error("Update your browser (ControlledFrame.request.createWebRequestInterceptor is needed). Chrome 141 is known working.");
 
 		let som = frame.request.createWebRequestInterceptor({
 			urlPatterns: ["*://summer.hackclub.com/*"],
-			includeHeaders: "all",
+			includeHeaders: await getIncludeHeadersValue(),
 			includeRequestBody: true,
 			blocking: true,
 		});
@@ -147,7 +202,7 @@ export let ApiFrame: Component = function(cx) {
 		});
 		let voter = frame.request.createWebRequestInterceptor({
 			urlPatterns: ["https://som-voting/*"],
-			includeHeaders: "all",
+			includeHeaders: await getIncludeHeadersValue(),
 			includeRequestBody: true,
 			blocking: true,
 		});
@@ -164,7 +219,7 @@ export let ApiFrame: Component = function(cx) {
 
 		let turnstile = frame.request.createWebRequestInterceptor({
 			urlPatterns: ["https://som-turnstile/*"],
-			includeHeaders: "all",
+			includeHeaders: await getIncludeHeadersValue(),
 			includeRequestBody: true,
 			blocking: true,
 		});

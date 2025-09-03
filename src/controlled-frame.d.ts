@@ -29,7 +29,8 @@ type ResourceType =
 	| 'image' | 'font' | 'object' | 'xmlhttprequest'
 	| 'ping' | 'csp‑report' | 'media' | 'websocket' | 'other';
 
-type RequestedHeaders = 'none' | 'cors' | 'all';
+/// same-origin and cross-origin are removed from latest
+type RequestedHeaders = 'none' | 'cors' | 'all' | "same-origin" | "cross-origin";
 
 interface WebRequestInterceptorOptions {
 	urlPatterns: (URLPattern | string)[];
