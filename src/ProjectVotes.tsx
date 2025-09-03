@@ -181,7 +181,7 @@ let VoteView: Component<{ vote: Vote }, {
 				</div>
 				<div class="side">
 					<Card variant="outlined">
-						<div>
+						<div class="explanation">
 							{this.vote.explanation}
 						</div>
 						{this.vote.invalid_reason &&
@@ -228,6 +228,10 @@ VoteView.style = css`
 	}
 	.side > :global(*) {
 		flex: 1;
+	}
+
+	.explanation {
+		white-space: pre-wrap;
 	}
 `;
 
