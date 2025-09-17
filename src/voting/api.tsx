@@ -92,14 +92,14 @@ function voteContentScript(inject: boolean) {
 
 	if (location.pathname === "/votes/new") {
 		function getVoteData() {
-			let remainingText = document.querySelector<HTMLParagraphElement>(`[data-sidebar-target="mainContent"] p.text-nice-blue`)?.innerText || "";
-			let remaining = +(/vote ([0-9]*) more times/.exec(remainingText)?.[1] || '0');
+			let remainingText = document.querySelector<HTMLParagraphElement>('[data-sidebar-target="mainContent"] [class^=" bg-[#F6DBBA]"] p.text-som-dark')?.innerText || "";
+			let remaining = +(/need ([0-9]*) more votes/.exec(remainingText)?.[1] || '0');
 
 			let notAccepted = document.querySelector("#vote-rejected-modal");
 			let accepted = !notAccepted;
 			if (notAccepted) notAccepted.dispatchEvent(new Event("click"));
 
-			let ids = [...document.querySelectorAll<HTMLInputElement>(`[name='fraud_report[suspect_id]']`)].map(x => +x.value);
+			let ids = [...document.querySelectorAll<HTMLInputElement>(`[name='vote[winning_project_id]']`)].map(x => +x.value).filter(Number.isFinite);
 
 			return { remaining, vote: ids, accepted };
 		}

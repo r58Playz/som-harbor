@@ -180,9 +180,11 @@ export const Matchup: Component<{ vote: VoteData }, {
 
 	cx.mount = async () => {
 		this.user = await getUser("me");
-		this.p1 = await getProject(this.vote.vote[0]);
-		this.p2 = await getProject(this.vote.vote[1]);
-		console.log(this.p1, this.p2);
+		let p1 = await getProject(this.vote.vote[0]);
+		let p2 = await getProject(this.vote.vote[1]);
+		console.log(p1, p2, this.vote.vote);
+		this.p1 = p1;
+		this.p2 = p2;
 
 		let interval = setInterval(() => {
 			this.timer -= 100;
