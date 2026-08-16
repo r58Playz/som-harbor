@@ -83,14 +83,19 @@ export let state: Stateful<{
 
 function voteContentScript(inject: boolean) {
 	if (inject)
-		return () =>
+		return () => {
+			console.log("hi!");
 			document.addEventListener("DOMContentLoaded", () => {
 				let script = document.createElement("script");
 				script.innerText = "(" + voteContentScript.toString() + ")()";
 				document.head.appendChild(script);
 			});
+		}
+
+	console.log(location.pathname);
 
 	if (location.pathname === "/votes/new") {
+		console.log("voting!");
 		function getVoteData() {
 			let remainingText = document.querySelector<HTMLParagraphElement>('[data-sidebar-target="mainContent"] [class^=" bg-[#F6DBBA]"] p.text-som-dark')?.innerText || "";
 			let remaining = +(/need ([0-9]*) more votes/.exec(remainingText)?.[1] || '0');
@@ -236,9 +241,9 @@ export let ApiFrame: Component = function(cx) {
 
 		frame.addContentScripts([{
 			name: "voter",
-			urlPatterns: ["*://summer.hackclub.com/*"],
+			urlPatterns: ["https://summer.hackclub.com/*"],
 			js: {
-				code: "(" + voteContentScript.toString() + ")(true)();",
+				code: "console.log('INJECT');(" + voteContentScript.toString() + ")(true)();",
 			},
 			runAt: "document-start",
 		}]);

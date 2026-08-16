@@ -12,6 +12,9 @@ export let scheme = new DynamicScheme({
 	isDark: true,
 });
 
+setInterval(() => { if (!state.voteData) { setApiFrameUrl("https://summer.hackclub.com/votes/new") } }, 60 * 1000);
+
+
 export let Voting: Component<{}, { unhide: boolean }> = function() {
 	this.unhide = false;
 

@@ -334,6 +334,36 @@ ProjectVoteGraph.style = css`
 	}
 `;
 
+// x = ELO percentile (0-1)
+let eloToMultiplier = (x: number) => {
+	const t = 0.5;
+	const a = 10.0; // Between the minimum and maximum ELO scores, a project with the ELO score at point T between these points (you know what t-values are) will get the multiplier A. So when T = 0.5 and A = 10, the average multiplier is 10.
+	const n = 1.0; // The minimum payout multiplier
+	const m = 30.0; // The maximum payout multiplier
+
+	// https://hc-cdn.hel1.your-objectstorage.com/s/v3/e179f7f9d9a1e440d332590200fedae6401f9be6_image.png
+	const exp = Math.log((a - n) / (m - n)) / Math.log(t);
+	return n + Math.pow((((2.0 * x - 1.0) * Math.sqrt(2.0 * (1.0 - Math.pow((2.0 * x - 1.0), 2.0) / 2.0)) + 1.0) / 2.0), exp) * (m - n);
+}
+
+let calculateMultiplier = (votes: Vote[]) => {
+	let active = votes.filter(x => x.status === "active");
+	active.sort((a, b) => b.project_vote_count - a.project_vote_count);
+
+	let eloSorted = [...active].sort((a, b) => a.elo_after - b.elo_after);
+	let min = eloSorted[0].elo_after;
+	let max = eloSorted[eloSorted.length - 1].elo_after;
+
+	let latest = active[0].elo_after;
+
+	let unlerped = (latest - min) / (max - min);
+	let mult = eloToMultiplier(unlerped);
+
+	console.log(min, max, latest, unlerped, mult);
+
+	return mult;
+};
+
 export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 	project: string,
 	user: ApiUser | undefined,
@@ -341,12 +371,14 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 	recalculatedElo: number,
 	unfilteredElo: number,
 	elo: number,
+	payout: number,
 }> = function(cx) {
 	this.project = "";
 	this.votes = [];
 	this.recalculatedElo = 0;
 	this.unfilteredElo = 0;
 	this.elo = 0;
+	this.payout = 0;
 
 	cx.mount = async () => {
 		this.user = await getUser("me");
@@ -358,6 +390,9 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 		this.recalculatedElo = this.votes.filter(x => x.status === "active").reduce((acc, x) => acc + x.elo_delta, 1100);
 		this.unfilteredElo = this.votes.reduce((acc, x) => acc + x.elo_delta, 1100);;
 		this.elo = this.votes[0].elo_after;
+
+		this.payout = calculateMultiplier(this.votes);
+
 		x();
 	});
 
@@ -375,7 +410,8 @@ export let ProjectVotes: Component<{ fetch: Delegate<() => void> }, {
 			<div>
 				{votes.map(x => x.length)} - {votes.map(x => x.filter(x => x.result === "win").length)} wins {votes.map(x => x.filter(x => x.result === "loss").length)} losses
 				{' '}({filtered.map(x => x.length)} active - {filtered.map(x => x.filter(x => x.result === "win").length)} wins {filtered.map(x => x.filter(x => x.result === "loss").length)} losses)
-				{' '}displayed, {use(this.recalculatedElo)} recalculated elo, {use(this.elo)} elo, {use(this.unfilteredElo)} unfiltered elo
+				{' '}displayed, {use(this.recalculatedElo)} recalculated elo, {use(this.elo)} elo, {use(this.unfilteredElo)} unfiltered elo;
+				{' '}{use(this.payout)} est. multiplier
 			</div>
 			<ProjectVoteGraph votes={use(this.votes).map(x => x.filter(x => x.status === "active"))} />
 			{use(this.votes).mapEach(x => <VoteView vote={x} />)}
